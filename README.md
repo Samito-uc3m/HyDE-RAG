@@ -36,10 +36,7 @@ A crucial part of research is comparing current work with previous studies (stat
 
 ---
 
-## Supported Databases
-The system relies on traditional academic databases, including:
-- **ACL Articles:** Contains 80,000 articles/posters dated up to September 2022.
-- **PubMed:** A collection of scientific articles related to medical and health sciences, available through its [official website](https://pubmed.ncbi.nlm.nih.gov/).
+## Dataset
 - **arXiv:** Kaggle offers a dataset with over 1.7 million abstracts and metadata from arXiv articles.
 
 ---

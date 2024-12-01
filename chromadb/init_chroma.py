@@ -1,39 +1,54 @@
 import chromadb
+import kagglehub
+import os
+import json  # Adjust depending on dataset format
 
-client = chromadb.PersistentClient(path="./chromadb/db")  # For persistent storage
+# Initialize persistent ChromaDB client
+client = chromadb.PersistentClient(path="./chromadb/db")
+collection = client.get_or_create_collection(name="arxiv")  # Avoid duplication
 
-collection = client.create_collection(name="Students")
+# Download the latest version of the dataset
+path = kagglehub.dataset_download("Cornell-University/arxiv")
 
-student_info = """
-Alexandra Thompson, a 19-year-old computer science sophomore with a 3.7 GPA,
-is a member of the programming and chess clubs who enjoys pizza, swimming, and hiking
-in her free time in hopes of working at a tech company after graduating from the University of Washington.
-"""
+# Define data folder (assuming the downloaded file is in this path)
+data_folder = path
 
-club_info = """
-The university chess club provides an outlet for students to come together and enjoy playing
-the classic strategy game of chess. Members of all skill levels are welcome, from beginners learning
-the rules to experienced tournament players. The club typically meets a few times per week to play casual games,
-participate in tournaments, analyze famous chess matches, and improve members' skills.
-"""
+# Initialize lists for batch processing
+documents, metadatas, ids = [], [], []
 
-university_info = """
-The University of Washington, founded in 1861 in Seattle, is a public research university
-with over 45,000 students across three campuses in Seattle, Tacoma, and Bothell.
-As the flagship institution of the six public universities in Washington state,
-UW encompasses over 500 buildings and 20 million square feet of space,
-including one of the largest library systems in the world.
-"""
+# File path to the large JSON file
+file_path = os.path.join(data_folder, "arxiv-metadata-oai-snapshot.json")
 
-collection.add(
-  documents = [student_info, club_info, university_info],
-  metadatas = [
-  	{"source": "student info"},
-		{"source": "club info"},
-		{'source':'university info'}
-	],
-  ids = ["id1", "id2", "id3"]
-)
+# Initialize the counter for files processed
+file_count = 0
 
-print("Documents add to collection Students")
+# Open and read the file content line by line
+with open(file_path, 'r', encoding='utf-8') as file:
+    for line in file:
+        # Parse each line as a separate JSON object
+        content = json.loads(line.strip())  # Load each JSON object
+        
+        # Extract data (title and abstract as an example)
+        documents.append(content["title"] + "\n\n" + content["abstract"])
+        metadatas.append({"source": content["id"], "title": content["title"], "abstract":content["abstract"]})
+        ids.append(f"doc_{file_count}")  # Unique IDs for each document
+        
+        if len(documents) == 243:
+        	print(content)
+        
+        file_count += 1
+
+        # Batch size: Add to ChromaDB in chunks (500 files at a time for efficiency)
+        if len(documents) >= 500:
+            collection.add(documents=documents, metadatas=metadatas, ids=ids)
+            documents, metadatas, ids = [], [], []  # Reset lists
+            print(f"Added {file_count} files to the collection.")
+            break
+
+# Add any remaining documents after the loop
+if documents:
+    collection.add(documents=documents, metadatas=metadatas, ids=ids)
+    print(f"Added final batch of {len(documents)} files.")
+
+print(f"Successfully added {file_count} documents to the 'arxiv' collection.")
 
