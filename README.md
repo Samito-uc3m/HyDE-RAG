@@ -6,9 +6,17 @@ A crucial part of research is comparing current work with previous studies (stat
 ---
 
 ## Instalation
-1. ```poetry install```
-2. ```poetry shell```
-3. ```pre-commit install```
+1. ```python -m venv .venv```
+2. ```source .venv/bin/activate```
+3. ```pip install requirements.txt```
+4. ```pre-commit install```
+
+---
+
+## Usage
+1. ```source .venv/bin/activate```
+2. Init db ```python chromadb/init_chroma.py```
+3. Run inference ```python hyde/main.py```
 
 ---
 
