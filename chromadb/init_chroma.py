@@ -8,10 +8,7 @@ client = chromadb.PersistentClient(path="./chromadb/db")
 collection = client.get_or_create_collection(name="arxiv")  # Avoid duplication
 
 # Download the latest version of the dataset
-path = kagglehub.dataset_download("Cornell-University/arxiv")
-
-# Define data folder (assuming the downloaded file is in this path)
-data_folder = path
+data_folder = kagglehub.dataset_download("Cornell-University/arxiv")
 
 # Initialize lists for batch processing
 documents, metadatas, ids = [], [], []
@@ -31,11 +28,7 @@ with open(file_path, 'r', encoding='utf-8') as file:
         # Extract data (title and abstract as an example)
         documents.append(content["title"] + "\n\n" + content["abstract"])
         metadatas.append({"source": content["id"], "title": content["title"], "abstract":content["abstract"]})
-        ids.append(f"doc_{file_count}")  # Unique IDs for each document
-        
-        if len(documents) == 243:
-        	print(content)
-        
+        ids.append(f"doc_{file_count}")  # Unique IDs for each documents
         file_count += 1
 
         # Batch size: Add to ChromaDB in chunks (500 files at a time for efficiency)
