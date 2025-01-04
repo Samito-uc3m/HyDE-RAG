@@ -1,10 +1,17 @@
+from confidence_filter import query_with_confidence
+from config import QUERY_MODE, SIMILARITY_TOP_K
 from data_loader import load_documents
-from llm_setup import get_llm
 from embedding_setup import get_embedding_model
-from vector_store_setup import create_vector_store, chunk_documents, create_nodes, embed_and_add_nodes
-from retriever import VectorDBRetriever
+from llm_setup import get_llm
 from query_engine import create_query_engine
-from config import SIMILARITY_TOP_K, QUERY_MODE
+from retriever import VectorDBRetriever
+from vector_store_setup import (
+    chunk_documents,
+    create_nodes,
+    create_vector_store,
+    embed_and_add_nodes,
+)
+
 
 def main():
     # Load documents
@@ -31,18 +38,23 @@ def main():
     print("im here")
 
     # Example queries
-    query_str = "Can you tell me about the key concepts for safety finetuning"
-    response = query_engine.query(query_str)
+    query_str = "Renormalized quasiparticles in antiferromagnetic states of the Hubbard model"
+    response = query_with_confidence(query_str, retriever, query_engine, confidence_threshold=0.5)
     print("Query 1:", query_str)
-    print("Response:", str(response))
 
-    # Another query
-    query_str = "How does Llama 2 perform compared to other open-source models?"
-    response = query_engine.query(query_str)
-    print("Query 2:", query_str)
-    print("Response:", str(response))
-    if response.source_nodes:
-        print("Source:", response.source_nodes[0].get_content())
+    if not response:
+        print("Confidence < 50%. Returning no answer.")
+    else:
+        print("Final Answer:", str(response))
+
+    # # Another query
+    # query_str = "How does Llama 2 perform compared to other open-source models?"
+    # response = query_engine.query(query_str)
+    # print("Query 2:", query_str)
+    # print("Response:", str(response))
+    # if response.source_nodes:
+    #     print("Source:", response.source_nodes[0].get_content())
+
 
 if __name__ == "__main__":
     main()
