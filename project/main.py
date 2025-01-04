@@ -1,6 +1,8 @@
 from confidence_filter import query_with_confidence
 from config import QUERY_MODE, SIMILARITY_TOP_K
+from correlation_filter import run_correlation_filter
 from data_loader import load_documents
+from doc_list import build_doc_list_response, retrieve_documents
 from embedding_setup import get_embedding_model
 from llm_setup import get_llm
 from query_engine import create_query_engine
@@ -14,46 +16,52 @@ from vector_store_setup import (
 
 
 def main():
-    # Load documents
-    documents = load_documents()
+    print("Loading documents...")
+    documents = load_documents(max_docs=500)
 
-    # Create vector store
+    print("Creating vector store...")
     vector_store = create_vector_store()
 
-    # Chunk documents into text nodes
+    print("Splitting documents into chunks...")
     text_chunks, doc_idxs = chunk_documents(documents)
+
+    print("Creating nodes...")
     nodes = create_nodes(documents, text_chunks, doc_idxs)
 
-    # Setup embedding model and embed nodes
+    print("Embedding and adding nodes to vector store...")
     embed_model = get_embedding_model()
     embed_and_add_nodes(nodes, embed_model, vector_store)
 
-    # Setup LLM
+    print("Setting up LLM...")
     llm = get_llm()
 
-    # Create retriever and query engine
-    retriever = VectorDBRetriever(vector_store, embed_model, query_mode=QUERY_MODE, similarity_top_k=SIMILARITY_TOP_K)
+    print("Setting up retriever...")
+    retriever = VectorDBRetriever(
+        vector_store=vector_store, embed_model=embed_model, query_mode=QUERY_MODE, similarity_top_k=SIMILARITY_TOP_K
+    )
+
+    print("Creating query engine...")
     query_engine = create_query_engine(retriever, llm)
 
-    print("im here")
+    # EXAMPLE: Return a list of relevant docs (rather than an LLM answer)
+    user_query = "Renormalized quasiparticles in antiferromagnetic states of the Hubbard model"
+    print(f"\nUser Query: {user_query}")
+    confidence_threshold = 0.5
 
-    # Example queries
-    query_str = "Renormalized quasiparticles in antiferromagnetic states of the Hubbard model"
-    response = query_with_confidence(query_str, retriever, query_engine, confidence_threshold=0.5)
-    print("Query 1:", query_str)
-
+    response = query_with_confidence(user_query, retriever, query_engine, confidence_threshold)
     if not response:
-        print("Confidence < 50%. Returning no answer.")
+        # If confidence < 50%, we do not proceed with correlation
+        print("Confidence is too low (<50%). Not providing an answer.")
+        return
     else:
-        print("Final Answer:", str(response))
+        # If we want a correlation analysis after confirming there's enough confidence,
+        # we can call run_correlation_filter.
+        # This approach might re-query the docs; that’s OK if you want to re-check or
+        # you can skip the correlation filter altogether if the confidence is "good enough."
 
-    # # Another query
-    # query_str = "How does Llama 2 perform compared to other open-source models?"
-    # response = query_engine.query(query_str)
-    # print("Query 2:", query_str)
-    # print("Response:", str(response))
-    # if response.source_nodes:
-    #     print("Source:", response.source_nodes[0].get_content())
+        correlation_response = run_correlation_filter(user_query, retriever, llm, top_k=5)
+        print("\n===== COMPILATION & DIFFERENCES =====\n")
+        print(correlation_response)
 
 
 if __name__ == "__main__":

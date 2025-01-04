@@ -1,7 +1,7 @@
 from llama_index.core import QueryBundle
 
 
-def query_with_confidence(query_str: str, retriever, query_engine, confidence_threshold: float = 0.5) -> str:
+def query_with_confidence(query_str: str, retriever, query_engine, confidence_threshold: float = 0.8) -> str:
     """
     Retrieve top results for the query, check the highest similarity score,
     and only call the LLM if the score >= `confidence_threshold`.
@@ -18,6 +18,7 @@ def query_with_confidence(query_str: str, retriever, query_engine, confidence_th
 
     # Check top similarity (assuming the retriever sorted them by descending similarity)
     top_score = retrieved_nodes_with_scores[0].score
+    print("top score", top_score)
     if top_score is None or top_score < confidence_threshold:
         return ""  # Return empty/no answer
 
