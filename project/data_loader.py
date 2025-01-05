@@ -1,3 +1,11 @@
+"""
+Módulo: data_loader.py
+
+Módulo para cargar documentos desde el conjunto de datos 'arxiv' disponible en Kaggle.
+Permite descargar el dataset, procesar su contenido y devolver una lista de documentos
+con su texto y metadatos relevantes.
+"""
+
 import json
 import os
 
@@ -8,9 +16,25 @@ from llama_index.readers.file import PyMuPDFReader
 
 def load_documents(max_docs=500):
     """
-    Download the 'arxiv' dataset from Kaggle, parse its JSON lines, and return
-    a list of dict objects, each containing 'text' and 'metadata'.
+    Descarga y procesa el conjunto de datos 'arxiv' desde Kaggle.
+
+    Este método descarga el dataset, extrae sus líneas en formato JSON, y procesa cada línea
+    para crear una lista de diccionarios. Cada diccionario incluye el texto combinado
+    (título y abstract) y los metadatos asociados.
+
+    Parámetros:
+    -----------
+    max_docs : int, opcional
+        Número máximo de documentos a procesar (por defecto es 500).
+
+    Devuelve:
+    --------
+    list
+        Una lista de diccionarios, cada uno con las claves:
+        - 'text': Título y resumen combinados.
+        - 'metadata': Metadatos relevantes como 'source', 'title', y 'abstract'.
     """
+    
     # Download the dataset to a local folder
     data_folder = kagglehub.dataset_download("Cornell-University/arxiv")
 

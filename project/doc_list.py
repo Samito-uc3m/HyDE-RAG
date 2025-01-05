@@ -1,8 +1,30 @@
+"""
+Módulo: doc_list.py
+
+Módulo para construir una lista estructurada de documentos.
+"""
+
 import json
 from pydantic import BaseModel
 
 
 class DocListResponse(BaseModel):
+    """
+    Modelo de datos para representar un documento con metadatos y puntaje de similitud.
+
+    Atributos:
+    ----------
+    index : int
+        El índice del documento en la lista.
+    title : str
+        El título del documento.
+    abstract : str
+        El resumen del documento.
+    source_id : str
+        El identificador de la fuente del documento.
+    similarity : float
+        El puntaje de similitud asociado al documento.
+    """
     index: int
     title: str
     abstract: str
@@ -12,8 +34,21 @@ class DocListResponse(BaseModel):
 
 def build_doc_list_response(nodes_with_scores) -> list[DocListResponse]:
     """
-    Create a JSON or structured string listing each retrieved document,
-    including metadata and similarity score.
+    Construye una lista estructurada de documentos.
+
+    Este método toma una lista de nodos con sus puntajes de similitud y crea
+    una lista de objetos `DocListResponse`, que incluyen el índice, título,
+    resumen, identificador de fuente, y puntaje de similitud.
+
+    Parámetros:
+    -----------
+    nodes_with_scores : list
+        Una lista de objetos que contienen nodos recuperados y sus puntajes de similitud.
+
+    Devuelve:
+    --------
+    list[DocListResponse]
+        Una lista de objetos `DocListResponse` con los datos estructurados de los documentos.
     """
     doc_list = []
     for i, nws in enumerate(nodes_with_scores):

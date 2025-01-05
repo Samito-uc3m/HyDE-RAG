@@ -1,3 +1,11 @@
+"""
+Módulo: streamlit_app.py
+
+Aplicación principal de Streamlit para un asistente de investigación basado en RAG (Retrieval-Augmented Generation).
+Este módulo permite a los usuarios ingresar consultas de investigación, buscar respuestas
+utilizando modelos de lenguaje y bases de datos vectoriales, desde la interfaz.
+"""
+
 import os
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"

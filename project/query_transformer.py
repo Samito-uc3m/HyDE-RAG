@@ -1,3 +1,10 @@
+"""
+Módulo: query_transformer.py
+
+Módulo para la transformación de querys del usuario en frases más concisas y útiles para
+búsquedas en una base de datos.
+"""
+
 from llama_index.core.base.llms.types import (
     ChatMessage,
     ChatResponse,
@@ -7,7 +14,19 @@ from llama_index.core.base.llms.types import (
 
 def build_entry_transformation_prompt(query_str: str) -> str:
     """
-    Transforms original query into a better for searching in the database
+    Transforma la query original en una mejor para la búsqueda en la base de datos.
+    Construye una plantilla de prompt que orienta al modelo a generar una versión 
+    más breve y enfocada.
+
+    Parámetros:
+    -----------
+    query_str : str
+        La consulta original proporcionada por el usuario.
+
+    Devuelve:
+    --------
+    str
+        Un mensaje de prompt para el modelo que describe la tarea de transformación.
     """
     prompt = f"""
         Example:
@@ -26,12 +45,22 @@ def build_entry_transformation_prompt(query_str: str) -> str:
 
 def run_query_transformation_filter(query_str: str, llm) -> ChatResponse:
     """
-    1) Build correlation prompt
-    2) Call the LLM
-    3) Return the structured result
+    Ejecuta la transformación de la query usando un modelo de lenguaje.
+
+    Parámetros:
+    -----------
+    query_str : str
+        La consulta original proporcionada por el usuario.
+    llm : object
+        Una instancia del modelo de lenguaje utilizado para generar la respuesta.
+
+    Devuelve:
+    --------
+    ChatResponse
+        La respuesta generada por el modelo en forma de un objeto estructurado.
     """
 
-    # Build whatever "prompt_text" you like (the old single-string prompt)
+    # Build the prompt text for the model
     prompt_text = build_entry_transformation_prompt(query_str)
 
     # Now wrap that prompt_text into a list of messages

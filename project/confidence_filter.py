@@ -1,12 +1,36 @@
+"""
+Módulo: confidence_filter.py
+
+Módulo para realizar querys con un umbral de confianza mínimo.
+"""
+
 from llama_index.core import QueryBundle
 from doc_list import build_doc_list_response
 
 
 def query_with_confidence(query_str: str, retriever, confidence_threshold: float = 0.8) -> str:
     """
-    Retrieve top results for the query, check the highest similarity score,
-    and only call the LLM if the score >= `confidence_threshold`.
-    Otherwise, return an empty string or a custom fallback.
+    Realiza una query utilizando un umbral de confianza.
+    
+    Este método recibe una query como texto y utiliza un "retriever" para 
+    recuperar los documentos más relevantes. Evalúa la similitud de los resultados 
+    recuperados y sólo devuelve aquellos cuya similitud sea mayor o igual al umbral
+    de confianza especificado (`confidence_threshold`).
+
+    Parámetros:
+    -----------
+    query_str : str
+        El texto de la query a realizar.
+    retriever : object
+        Un objeto encargado de realizar las búsquedas en el índice de datos.
+    confidence_threshold : float, opcional
+        El umbral mínimo de confianza para aceptar un resultado (por defecto es 0.8).
+
+    Devuelve:
+    --------
+    list
+        Una lista de documentos cuya similitud con la consulta supera el umbral de confianza.
+        Si no se encuentra ningún documento que cumpla el criterio, retorna una lista vacía.
     """
 
     # Retrieve the nodes (directly from the retriever)

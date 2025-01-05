@@ -1,3 +1,11 @@
+"""
+Módulo: correlation_filter.py
+
+Módulo para construir prompts y ejecutar un filtro de correlación entre una consulta
+del usuario y documentos recuperados. Permite identificar diferencias, brechas y similitudes 
+entre la consulta y el contenido de los documentos mediante un modelo de lenguaje.
+"""
+
 from typing import List
 
 from llama_index.core import QueryBundle
@@ -13,9 +21,21 @@ from doc_list import DocListResponse
 
 def build_correlation_prompt(query_str: str, retrieved_docs: List[DocListResponse]) -> str:
     """
-    Builds a prompt that:
-    1. Summarizes the relevant content from each doc (the compilation)
-    2. Highlights differences/gaps between the user's query & docs
+    Construye un prompt que:
+    1. Resume el contenido relevante de cada documento (la compilación).
+    2. Destaca diferencias o brechas entre la consulta del usuario y los documentos.
+
+    Parámetros:
+    -----------
+    query_str : str
+        El texto de la consulta del usuario.
+    retrieved_docs : List[DocListResponse]
+        Una lista de documentos relevantes recuperados para la consulta.
+
+    Devuelve:
+    --------
+    str
+        El texto del prompt estructurado para ser usado por un modelo de lenguaje.
     """
     doc_summaries = ""
     for i, doc in enumerate(retrieved_docs):
@@ -46,12 +66,27 @@ def build_correlation_prompt(query_str: str, retrieved_docs: List[DocListRespons
 
 def run_correlation_filter(query_str: str, retrieved_docs: List[DocListResponse], llm) -> ChatResponse:
     """
-    1) Build correlation prompt
-    2) Call the LLM
-    3) Return the structured result
+    Ejecuta un filtro de correlación entre la consulta del usuario y los documentos recuperados.
+    
+    Este método construye un prompt basado en la consulta del usuario y los documentos relevantes,
+    llama a un modelo de lenguaje (LLM) para analizar la correlación y devuelve un resultado estructurado.
+
+    Parámetros:
+    -----------
+    query_str : str
+        El texto de la consulta del usuario.
+    retrieved_docs : List[DocListResponse]
+        Una lista de documentos relevantes recuperados para la consulta.
+    llm : object
+        El modelo de lenguaje encargado de procesar el prompt y devolver el resultado.
+
+    Devuelve:
+    --------
+    ChatResponse
+        La respuesta estructurada generada por el modelo de lenguaje.
     """
 
-    # Build whatever "prompt_text" you like (the old single-string prompt)
+    # Build the prompt text
     prompt_text = build_correlation_prompt(query_str, retrieved_docs)
 
     # Now wrap that prompt_text into a list of messages
