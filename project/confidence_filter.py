@@ -22,8 +22,4 @@ def query_with_confidence(query_str: str, retriever, confidence_threshold: float
     # Only return documents with confidence >= threshold
     retrieved_docs = [doc for doc in retrieved_docs if doc.similarity >= confidence_threshold]
 
-    # Print the similarity score of all documents
-    for doc in retrieved_docs:
-        print(f"Document: {doc.title}, Similarity: {doc.similarity}")
-
     return retrieved_docs

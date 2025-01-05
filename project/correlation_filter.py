@@ -26,7 +26,8 @@ def build_correlation_prompt(query_str: str, retrieved_docs: List[DocListRespons
     prompt = f"""
                 System: You are an assistant that compares the user's research query to the provided documents.
                 Produce a compilation of key points from the documents and highlight any differences or gaps.
-                If the retrieved documents do not have relevant information about the query please only state 
+                Please provide your response in a single paragraph. Please answer in the language used in the user query.
+                If the retrieved documents do not have relevant information about the query please only state
                     'I have not found relevant documents about the topic you are researching.' and there is no need to follow the instructions bellow.
 
                 User Query:

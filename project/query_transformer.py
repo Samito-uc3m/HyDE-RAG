@@ -16,7 +16,7 @@ def build_entry_transformation_prompt(query_str: str) -> str:
 
         Task:
         Transform the following user query into a concise phrase that captures the main topic without extra words or phrases.
-        Return only the concise phrase without any extra commentary.
+        Return only the concise phrase without any extra commentary. Please answer in a sentence and in English.
 
         User Query:
         "{query_str}"

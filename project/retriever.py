@@ -55,14 +55,4 @@ class VectorDBRetriever(BaseRetriever):
                 seen_sources.add(source)
                 selected_nodes.append(NodeWithScore(node=node, score=similarity))
 
-                print(
-                    f"Selected Node from Source: {source}, "
-                    f"Similarity: {similarity}"
-                )
-            else:
-                print(
-                    f"Skipping Node from Source: {source}, "
-                    f"Similarity: {similarity} (source already included)"
-                )
-
         return selected_nodes

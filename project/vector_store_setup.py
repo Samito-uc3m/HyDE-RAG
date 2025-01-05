@@ -8,7 +8,7 @@ import chromadb
 
 def create_vector_store():
     chroma_client = chromadb.EphemeralClient()
-    chroma_collection = chroma_client.create_collection("quickstart")
+    chroma_collection = chroma_client.get_or_create_collection("quickstart")
     return ChromaVectorStore(chroma_collection=chroma_collection)
 
 

@@ -56,6 +56,7 @@ def main():
 
     # User query
     user_query = "I am researching about the renormalized quasiparticles in antiferromagnetic states of the Hubbard model, could you please check and find any relevant documents?"
+    user_query = "Estoy investigando sobre las quasi-partículas renormalizadas en estados antiferromagnéticos del modelo de Hubbard. ¿Podrías, por favor, buscar y encontrar documentos relevantes?"
     transformed_query = run_query_transformation_filter(user_query, llm)
 
     if "Output: " in transformed_query.raw["choices"][0]["text"]:
@@ -63,14 +64,6 @@ def main():
         transformed_query = transformed_query.raw["choices"][0]["text"][transformed_query.raw["choices"][0]["text"].rfind('Output: "') + len('Output: "'): -1]
         print("Trimmed Query", transformed_query)
     confidence_threshold = 0.8
-
-    # print("\n===== IDEAL DOCUMENT LIST =====\n")
-    # response = query_with_confidence(ideal_query, retriever, confidence_threshold)
-    # print(response)
-
-    # print("\n===== USER DOCUMENT LIST =====\n")
-    # response = query_with_confidence(user_query, retriever, confidence_threshold)
-    # print(response)
 
     print("\n===== TRIMMED DOCUMENT LIST =====\n")
     response = query_with_confidence(transformed_query, retriever, confidence_threshold)
@@ -80,9 +73,9 @@ def main():
         print('I have not found relevant documents about the topic you are researching.')
         return
 
-    # correlation_response = run_correlation_filter(transformed_query, response, llm)
-    # print("\n===== COMPILATION & DIFFERENCES =====\n")
-    # print(correlation_response)
+    correlation_response = run_correlation_filter(user_query, response, llm)
+    print("\n===== COMPILATION & DIFFERENCES =====\n")
+    print(correlation_response)
 
 
 if __name__ == "__main__":
