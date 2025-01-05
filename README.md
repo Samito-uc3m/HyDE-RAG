@@ -15,8 +15,7 @@ A crucial part of research is comparing current work with previous studies (stat
 
 ## Usage
 1. ```source .venv/bin/activate```
-2. Init db ```python chromadb/init_chroma.py```
-3. Run inference ```python hyde/main.py```
+2. Run page: ```streamlit run project/streamlit_app.py```
 
 ---
 

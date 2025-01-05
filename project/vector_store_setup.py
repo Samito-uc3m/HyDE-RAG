@@ -1,4 +1,4 @@
-from config import CHUNK_SIZE
+from config import CHUNK_SIZE, CHUNK_OVERLAP
 from llama_index.core.node_parser import SentenceSplitter
 from llama_index.core.schema import TextNode
 from llama_index.vector_stores.chroma import ChromaVectorStore
@@ -8,13 +8,14 @@ import chromadb
 
 def create_vector_store():
     chroma_client = chromadb.EphemeralClient()
-    chroma_collection = chroma_client.create_collection("quickstart")
+    chroma_collection = chroma_client.get_or_create_collection("quickstart")
     return ChromaVectorStore(chroma_collection=chroma_collection)
 
 
 def chunk_documents(documents):
     text_parser = SentenceSplitter(
         chunk_size=CHUNK_SIZE,
+        chunk_overlap=CHUNK_OVERLAP,
     )
 
     text_chunks = []
