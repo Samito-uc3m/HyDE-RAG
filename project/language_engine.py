@@ -2,8 +2,6 @@
 Modulo para deteccion de idiomas
 """
 import fasttext as ft
-import os
-import urllib.request
 
 # Direccion del modelo de fasttext para deteccion de idiomas
 models_path = '../models/'
