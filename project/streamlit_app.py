@@ -16,12 +16,13 @@ import time
 import streamlit as st
 from llm_setup import get_llm
 from confidence_filter import query_with_confidence
-from config import QUERY_MODE, NODE_TOP_K, DOCUMENT_TOP_K
+from config import QUERY_MODE, NODE_TOP_K, DOCUMENT_TOP_K, FASTTEXT_MODEL
 from correlation_filter import run_correlation_filter
 from query_transformer import run_query_transformation_filter
 from data_loader import load_documents
 from embedding_setup import get_embedding_model
 from retriever import VectorDBRetriever
+from language_engine import load_language_detection_model, detect_language
 from vector_store_setup import (
     chunk_documents,
     create_nodes,
@@ -49,7 +50,7 @@ def load_database(embed_model, vector_store):
     st.session_state.show_success = True  # Trigger success message
 
 
-def main(vector_store, embed_model, llm, retriever):
+def main(vector_store, embed_model, llm, retriever, language_detection_model):
     st.title("RAG-based Research Assistant")
 
     # Initialize session state variables
@@ -78,6 +79,11 @@ def main(vector_store, embed_model, llm, retriever):
     if st.button("Search"):
         if user_query.strip():
             # Call the RAG pipeline
+
+            # Detect the language of the query
+            detected_language = detect_language(user_query, language_detection_model)
+
+            # Transform the query
             transformed_query = run_query_transformation_filter(user_query, llm)
 
             # Clean the output if it contains "Output: "
@@ -92,7 +98,7 @@ def main(vector_store, embed_model, llm, retriever):
                 st.session_state.response = "I have not found relevant documents about the topic you are researching."
             else:
                 # Call the correlation filter
-                result = run_correlation_filter(user_query, response, llm)
+                result = run_correlation_filter(user_query, detected_language, response, llm)
                 st.session_state.response = result
         else:
             st.write("Please enter a query.")
@@ -142,4 +148,7 @@ if __name__ == "__main__":
         document_top_k=DOCUMENT_TOP_K
     )
 
-    main(vector_store, embed_model, llm, retriever)
+    print("Loading language detection model...")
+    language_detection_model = load_language_detection_model(FASTTEXT_MODEL)
+
+    main(vector_store, embed_model, llm, retriever, language_detection_model)

@@ -19,7 +19,7 @@ from doc_list import DocListResponse
 
 
 
-def build_correlation_prompt(query_str: str, retrieved_docs: List[DocListResponse]) -> str:
+def build_correlation_prompt(query_str: str, output_language: str, retrieved_docs: List[DocListResponse]) -> str:
     """
     Construye un prompt que:
     1. Resume el contenido relevante de cada documento (la compilación).
@@ -29,6 +29,8 @@ def build_correlation_prompt(query_str: str, retrieved_docs: List[DocListRespons
     -----------
     query_str : str
         El texto de la consulta del usuario.
+    output_language : str
+        El idioma en el que se debe generar la respuesta.
     retrieved_docs : List[DocListResponse]
         Una lista de documentos relevantes recuperados para la consulta.
 
@@ -46,7 +48,7 @@ def build_correlation_prompt(query_str: str, retrieved_docs: List[DocListRespons
     prompt = f"""
                 System: You are an assistant that compares the user's research query to the provided documents.
                 Produce a compilation of key points from the documents and highlight any differences or gaps.
-                Please provide your response in a single paragraph. Please answer in the language used in the user query.
+                Please provide your response in a single paragraph. Please provide your answer in {output_language} language.
                 If the retrieved documents do not have relevant information about the query please only state
                     'I have not found relevant documents about the topic you are researching.' and there is no need to follow the instructions bellow.
 
@@ -64,7 +66,7 @@ def build_correlation_prompt(query_str: str, retrieved_docs: List[DocListRespons
     return prompt
 
 
-def run_correlation_filter(query_str: str, retrieved_docs: List[DocListResponse], llm) -> ChatResponse:
+def run_correlation_filter(query_str: str, output_language: str, retrieved_docs: List[DocListResponse], llm) -> ChatResponse:
     """
     Ejecuta un filtro de correlación entre la consulta del usuario y los documentos recuperados.
     
@@ -75,6 +77,8 @@ def run_correlation_filter(query_str: str, retrieved_docs: List[DocListResponse]
     -----------
     query_str : str
         El texto de la consulta del usuario.
+    output_language : str
+        El idioma en el que se debe generar la respuesta.
     retrieved_docs : List[DocListResponse]
         Una lista de documentos relevantes recuperados para la consulta.
     llm : object
@@ -87,7 +91,7 @@ def run_correlation_filter(query_str: str, retrieved_docs: List[DocListResponse]
     """
 
     # Build the prompt text
-    prompt_text = build_correlation_prompt(query_str, retrieved_docs)
+    prompt_text = build_correlation_prompt(query_str, output_language, retrieved_docs)
 
     # Now wrap that prompt_text into a list of messages
     messages = [

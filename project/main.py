@@ -6,13 +6,13 @@ os.environ["HF_TOKEN"] = "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"
 
 
 from confidence_filter import query_with_confidence
-from config import QUERY_MODE, NODE_TOP_K, DOCUMENT_TOP_K
+from config import QUERY_MODE, NODE_TOP_K, DOCUMENT_TOP_K, FASTTEXT_MODEL
 from correlation_filter import run_correlation_filter
 from query_transformer import run_query_transformation_filter
 from data_loader import load_documents
 from embedding_setup import get_embedding_model
 from llm_setup import get_llm
-from query_engine import create_query_engine
+from language_engine import load_language_detection_model, detect_language
 from retriever import VectorDBRetriever
 from vector_store_setup import (
     chunk_documents,
@@ -51,14 +51,23 @@ def main():
         document_top_k=DOCUMENT_TOP_K
     )
 
+    print("Loading language detection model...")
+    language_detection_model = load_language_detection_model(FASTTEXT_MODEL)
+
+
     # print("Creating query engine...")
     # query_engine = create_query_engine(retriever, llm)
 
     # User query
     user_query = "I am researching about the renormalized quasiparticles in antiferromagnetic states of the Hubbard model, could you please check and find any relevant documents?"
     user_query = "Estoy investigando sobre las quasi-partículas renormalizadas en estados antiferromagnéticos del modelo de Hubbard. ¿Podrías, por favor, buscar y encontrar documentos relevantes?"
+    
+    # Detect the language of the user query
+    detected_language = detect_language(user_query, language_detection_model)
+    print(f"Detected language: {detected_language}")
+    
+    # Transform the user query
     transformed_query = run_query_transformation_filter(user_query, llm)
-
     if "Output: " in transformed_query.raw["choices"][0]["text"]:
         # Find the last index of the string "Output: "
         transformed_query = transformed_query.raw["choices"][0]["text"][transformed_query.raw["choices"][0]["text"].rfind('Output: "') + len('Output: "'): -1]
@@ -73,7 +82,7 @@ def main():
         print('I have not found relevant documents about the topic you are researching.')
         return
 
-    correlation_response = run_correlation_filter(user_query, response, llm)
+    correlation_response = run_correlation_filter(user_query, detected_language, response, llm)
     print("\n===== COMPILATION & DIFFERENCES =====\n")
     print(correlation_response)
 
