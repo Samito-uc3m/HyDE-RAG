@@ -1,8 +1,14 @@
+import os
+
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["HF_HOME"] = "/home/sam/.cache/huggingface/"
+os.environ["HF_TOKEN"] = "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"
+
+
 from confidence_filter import query_with_confidence
 from config import QUERY_MODE, SIMILARITY_TOP_K
 from correlation_filter import run_correlation_filter
 from data_loader import load_documents
-from doc_list import build_doc_list_response, retrieve_documents
 from embedding_setup import get_embedding_model
 from llm_setup import get_llm
 from query_engine import create_query_engine
@@ -40,28 +46,22 @@ def main():
         vector_store=vector_store, embed_model=embed_model, query_mode=QUERY_MODE, similarity_top_k=SIMILARITY_TOP_K
     )
 
-    print("Creating query engine...")
-    query_engine = create_query_engine(retriever, llm)
+    # print("Creating query engine...")
+    # query_engine = create_query_engine(retriever, llm)
 
     # EXAMPLE: Return a list of relevant docs (rather than an LLM answer)
     user_query = "Renormalized quasiparticles in antiferromagnetic states of the Hubbard model"
+    # user_query = "Fc Barcelona financial fair play problems with Dani Olmo and Pau Victor"
     print(f"\nUser Query: {user_query}")
     confidence_threshold = 0.5
 
-    response = query_with_confidence(user_query, retriever, query_engine, confidence_threshold)
-    if not response:
-        # If confidence < 50%, we do not proceed with correlation
-        print("Confidence is too low (<50%). Not providing an answer.")
-        return
-    else:
-        # If we want a correlation analysis after confirming there's enough confidence,
-        # we can call run_correlation_filter.
-        # This approach might re-query the docs; that’s OK if you want to re-check or
-        # you can skip the correlation filter altogether if the confidence is "good enough."
+    response = query_with_confidence(user_query, retriever, confidence_threshold)
+    print("\n===== FILTERED DOCUMENT LIST =====\n")
+    print(response)
 
-        correlation_response = run_correlation_filter(user_query, retriever, llm, top_k=5)
-        print("\n===== COMPILATION & DIFFERENCES =====\n")
-        print(correlation_response)
+    correlation_response = run_correlation_filter(user_query, response, llm)
+    print("\n===== COMPILATION & DIFFERENCES =====\n")
+    print(correlation_response)
 
 
 if __name__ == "__main__":
