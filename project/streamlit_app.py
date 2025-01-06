@@ -5,23 +5,18 @@ Aplicación principal de Streamlit para un asistente de investigación basado en
 Este módulo permite a los usuarios ingresar consultas de investigación, buscar respuestas
 utilizando modelos de lenguaje y bases de datos vectoriales, desde la interfaz.
 """
-
-import os
-
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
-os.environ["HF_HOME"] = "/home/sam/.cache/huggingface/"
-
 import time
+
 import streamlit as st
-from llm_setup import get_llm
 from confidence_filter import query_with_confidence
 from config import settings
 from correlation_filter import run_correlation_filter
-from query_transformer import run_query_transformation_filter
 from data_loader import load_documents
 from embedding_setup import get_embedding_model
+from language_engine import detect_language, load_language_detection_model
+from llm_setup import get_llm
+from query_transformer import run_query_transformation_filter
 from retriever import VectorDBRetriever
-from language_engine import load_language_detection_model, detect_language
 from vector_store_setup import (
     chunk_documents,
     create_nodes,
@@ -47,13 +42,20 @@ def setup():
         embed_model=embed_model,
         query_mode=settings.QUERY_MODE,
         node_top_k=settings.NODE_TOP_K,
-        document_top_k=settings.DOCUMENT_TOP_K
+        document_top_k=settings.DOCUMENT_TOP_K,
     )
 
     print("Loading language detection model...")
     language_detection_model = load_language_detection_model()
 
-    return embed_model, llm, retriever, vector_store, collection, language_detection_model
+    return (
+        embed_model,
+        llm,
+        retriever,
+        vector_store,
+        collection,
+        language_detection_model,
+    )
 
 
 # --------------- Database Loading Logic ---------------
@@ -72,7 +74,6 @@ def load_database(embed_model, vector_store):
 
 
 def main():
-
     # Set the page title
     st.title("RAG-based Research Assistant")
 
@@ -87,7 +88,14 @@ def main():
         st.session_state.show_success = False
     if "embed_model" not in st.session_state:
         # Setup the application
-        embed_model, llm, retriever, vector_store, collection, language_detection_model = setup()
+        (
+            embed_model,
+            llm,
+            retriever,
+            vector_store,
+            collection,
+            language_detection_model,
+        ) = setup()
 
         # Save the setup in session state
         st.session_state.embed_model = embed_model
@@ -96,7 +104,6 @@ def main():
         st.session_state.vector_store = vector_store
         st.session_state.collection = collection
         st.session_state.language_detection_model = language_detection_model
-    
 
     # Reset the success message state if not triggered by "Load Database"
     if st.session_state.show_success and not st.session_state.db_loaded:
@@ -116,21 +123,30 @@ def main():
             # Call the RAG pipeline
 
             # Detect the language of the query
-            detected_language = detect_language(user_query, st.session_state.language_detection_model)
+            detected_language = detect_language(
+                user_query, st.session_state.language_detection_model
+            )
             print(f"Detected language: {detected_language}")
 
             # Transform the query
-            transformed_query = run_query_transformation_filter(user_query, st.session_state.llm)
+            transformed_query = run_query_transformation_filter(
+                user_query, st.session_state.llm
+            )
             if "Output: " in transformed_query:
-                transformed_query = transformed_query[transformed_query.rfind('Output: "') + len('Output: "'): -1]
+                transformed_query = transformed_query[
+                    transformed_query.rfind('Output: "') + len('Output: "') : -1
+                ]
             print(f"Transformed query: {transformed_query}")
 
             # Get the query response
-            confidence_threshold = 0.8
-            response = query_with_confidence(transformed_query, st.session_state.retriever, confidence_threshold)
-            
+            response = query_with_confidence(
+                transformed_query, st.session_state.retriever
+            )
+
             # Call the correlation filter
-            result = run_correlation_filter(user_query, detected_language, response, st.session_state.llm)
+            result = run_correlation_filter(
+                user_query, detected_language, response, st.session_state.llm
+            )
             st.session_state.response = result
         else:
             st.write("Please enter a query.")
@@ -150,7 +166,9 @@ def main():
             key="load_db_button",
         ):
             if st.session_state.collection.count() == 0:
-                load_database(st.session_state.embed_model, st.session_state.vector_store)  # Load the database when button is clicked
+                load_database(
+                    st.session_state.embed_model, st.session_state.vector_store
+                )  # Load the database when button is clicked
 
             st.session_state.db_loaded = True
             st.session_state.show_success = True  # Trigger success message

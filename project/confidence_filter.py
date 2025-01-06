@@ -4,16 +4,17 @@ Módulo: confidence_filter.py
 Módulo para realizar querys con un umbral de confianza mínimo.
 """
 
-from llama_index.core import QueryBundle
+from config import settings
 from doc_list import build_doc_list_response
+from llama_index.core import QueryBundle
 
 
-def query_with_confidence(query_str: str, retriever, confidence_threshold: float = 0.8) -> str:
+def query_with_confidence(query_str: str, retriever) -> str:
     """
     Realiza una query utilizando un umbral de confianza.
-    
-    Este método recibe una query como texto y utiliza un "retriever" para 
-    recuperar los documentos más relevantes. Evalúa la similitud de los resultados 
+
+    Este método recibe una query como texto y utiliza un "retriever" para
+    recuperar los documentos más relevantes. Evalúa la similitud de los resultados
     recuperados y sólo devuelve aquellos cuya similitud sea mayor o igual al umbral
     de confianza especificado (`confidence_threshold`).
 
@@ -36,7 +37,7 @@ def query_with_confidence(query_str: str, retriever, confidence_threshold: float
     # Retrieve the nodes (directly from the retriever)
     query_bundle = QueryBundle(query_str)
     retrieved_nodes_with_scores = retriever._retrieve(query_bundle)
-    
+
     # Get documents for the top k nodes
     retrieved_docs = build_doc_list_response(retrieved_nodes_with_scores)
     if not retrieved_docs:
@@ -44,6 +45,10 @@ def query_with_confidence(query_str: str, retriever, confidence_threshold: float
         return []
 
     # Only return documents with confidence >= threshold
-    retrieved_docs = [doc for doc in retrieved_docs if doc.similarity >= confidence_threshold]
+    retrieved_docs = [
+        doc
+        for doc in retrieved_docs
+        if doc.similarity >= settings.RETRIEVER_CONFIDENCE_THRESHOLD
+    ]
 
     return retrieved_docs

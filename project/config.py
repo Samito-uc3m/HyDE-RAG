@@ -1,32 +1,55 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field
 from pathlib import Path
 from typing import Dict
+
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env")
 
+    # User query
+    USER_QUERY: str = "Estoy investigando sobre las quasi-partículas renormalizadas en estados antiferromagnéticos del modelo de Hubbard. ¿Podrías, por favor, buscar y encontrar documentos relevantes?"
+
     # General
-    DATABASE_PATH: Path = Field(default=Path('./data/llama.db'), description="Path to the database file.")
-    MODELS_PATH: Path = Field(default=Path('./models/'), description="Path to the models directory.")
+    DATABASE_PATH: Path = Field(
+        default=Path("./data/llama.db"), description="Path to the database file."
+    )
+    MODELS_PATH: Path = Field(
+        default=Path("./models/"), description="Path to the models directory."
+    )
 
     # Embeddings model
-    EMBED_MODEL_NAME: str = Field(default="BAAI/bge-small-en", description="Name of the embedding model.")
-    
+    EMBED_MODEL_NAME: str = Field(
+        default="BAAI/bge-small-en", description="Name of the embedding model."
+    )
+
     # OpenAI model
-    OPENAI_MODEL: str = Field(default="gpt-4o-mini", description="Name of the OpenAI model.")
+    OPENAI_MODEL: str = Field(
+        default="gpt-4o-mini", description="Name of the OpenAI model."
+    )
     OPENAI_API_KEY: str = Field(default="", description="API key for OpenAI access.")
 
     # Vector store configuration
-    CHUNK_SIZE: int = Field(default=128, description="Size of text chunks for processing.")
-    CHUNK_OVERLAP: int = Field(default=50, description="Overlap size between text chunks.")
+    CHUNK_SIZE: int = Field(
+        default=128, description="Size of text chunks for processing."
+    )
+    CHUNK_OVERLAP: int = Field(
+        default=50, description="Overlap size between text chunks."
+    )
     NODE_TOP_K: int = Field(default=20, description="Number of top nodes to retrieve.")
-    DOCUMENT_TOP_K: int = Field(default=3, description="Number of top documents to retrieve.")
+    DOCUMENT_TOP_K: int = Field(
+        default=3, description="Number of top documents to retrieve."
+    )
     QUERY_MODE: str = Field(default="default", description="Mode for querying.")
-    RETRIEVER_CONFIDENCE_THRESHOLD: float = Field(default=0.8, description="Confidence threshold for retriever.")
+    RETRIEVER_CONFIDENCE_THRESHOLD: float = Field(
+        default=0.8, description="Confidence threshold for retriever."
+    )
 
     # Language model configuration
-    FASTTEXT_MODEL: str = Field(default="lid.176.ftz", description="Path to the FastText model file.")
+    FASTTEXT_MODEL: str = Field(
+        default="lid.176.ftz", description="Path to the FastText model file."
+    )
     FASTTEXT_LANGUAGES_MAP: Dict[str, str] = Field(
         default={
             "af": "Afrikaans",
@@ -207,5 +230,6 @@ class Settings(BaseSettings):
             "zh": "Chinese",
         }
     )
-           
+
+
 settings = Settings()

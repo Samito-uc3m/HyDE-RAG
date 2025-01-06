@@ -1,18 +1,11 @@
-import os
-
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
-os.environ["HF_HOME"] = "/home/sam/.cache/huggingface/"
-os.environ["HF_TOKEN"] = "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"
-
-
 from confidence_filter import query_with_confidence
 from config import settings
 from correlation_filter import run_correlation_filter
-from query_transformer import run_query_transformation_filter
 from data_loader import load_documents
 from embedding_setup import get_embedding_model
+from language_engine import detect_language, load_language_detection_model
 from llm_setup import get_llm
-from language_engine import load_language_detection_model, detect_language
+from query_transformer import run_query_transformation_filter
 from retriever import VectorDBRetriever
 from vector_store_setup import (
     chunk_documents,
@@ -42,9 +35,11 @@ def main():
 
         print("Adding nodes to vector store...")
         embed_and_add_nodes(nodes, embed_model, vector_store)
-    
+
     else:
-        print(f"Skipping collection loading because it already contains {collection.count()} nodes.")
+        print(
+            f"Skipping collection loading because it already contains {collection.count()} nodes."
+        )
 
     print("Setting up LLM...")
     llm = get_llm()
@@ -55,32 +50,31 @@ def main():
         embed_model=embed_model,
         query_mode=settings.QUERY_MODE,
         node_top_k=settings.NODE_TOP_K,
-        document_top_k=settings.DOCUMENT_TOP_K
+        document_top_k=settings.DOCUMENT_TOP_K,
     )
 
     print("Loading language detection model...")
     language_detection_model = load_language_detection_model()
 
-    # User query
-    user_query = "I am researching about the renormalized quasiparticles in antiferromagnetic states of the Hubbard model, could you please check and find any relevant documents?"
-    user_query = "Estoy investigando sobre las quasi-partículas renormalizadas en estados antiferromagnéticos del modelo de Hubbard. ¿Podrías, por favor, buscar y encontrar documentos relevantes?"
-    
     # Detect the language of the user query
-    detected_language = detect_language(user_query, language_detection_model)
+    detected_language = detect_language(settings.USER_QUERY, language_detection_model)
     print(f"Detected language: {detected_language}")
-    
+
     # Transform the user query
-    transformed_query = run_query_transformation_filter(user_query, llm)
+    transformed_query = run_query_transformation_filter(settings.USER_QUERY, llm)
     if "Output: " in transformed_query:
-        transformed_query = transformed_query[transformed_query.rfind('Output: "') + len('Output: "'): -1]
+        transformed_query = transformed_query[
+            transformed_query.rfind('Output: "') + len('Output: "') : -1
+        ]
         print("Trimmed Query", transformed_query)
-    confidence_threshold = 0.8
 
     print("\n===== TRIMMED DOCUMENT LIST =====\n")
-    response = query_with_confidence(transformed_query, retriever, confidence_threshold)
+    response = query_with_confidence(transformed_query, retriever)
     # print(response)
 
-    correlation_response = run_correlation_filter(transformed_query, detected_language, response, llm)
+    correlation_response = run_correlation_filter(
+        transformed_query, detected_language, response, llm
+    )
     print("\n===== COMPILATION & DIFFERENCES =====\n")
     print(correlation_response)
 
