@@ -6,7 +6,7 @@ authors = ["Samito-uc3m <100429112@alumnos.uc3m.es>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.9"
 
 
 [tool.poetry.group.dev.dependencies]
