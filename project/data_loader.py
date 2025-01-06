@@ -14,7 +14,7 @@ from config import PDF_FILE_PATH
 from llama_index.readers.file import PyMuPDFReader
 
 
-def load_documents(max_docs=500):
+def load_documents(max_docs = None):
     """
     Descarga y procesa el conjunto de datos 'arxiv' desde Kaggle.
 
@@ -25,7 +25,7 @@ def load_documents(max_docs=500):
     Parámetros:
     -----------
     max_docs : int, opcional
-        Número máximo de documentos a procesar (por defecto es 500).
+        Número máximo de documentos a procesar (por defecto es None).
 
     Devuelve:
     --------
@@ -59,7 +59,7 @@ def load_documents(max_docs=500):
             count += 1
 
             # Stop after 'max_docs' documents
-            if count >= max_docs:
+            if max_docs is not None and count >= max_docs:
                 break
 
     return documents

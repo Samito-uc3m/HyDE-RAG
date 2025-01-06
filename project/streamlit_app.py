@@ -31,107 +31,10 @@ from vector_store_setup import (
 )
 
 
-# --------------- Database Loading Logic ---------------
-def load_database(embed_model, vector_store):
-
-    print("Loading documents...")
-    documents = load_documents(max_docs=500)
-
-    print("Splitting documents into chunks...")
-    text_chunks, doc_idxs = chunk_documents(documents)
-
-    print("Creating nodes...")
-    nodes = create_nodes(documents, text_chunks, doc_idxs)
-
-    print("Embedding and adding nodes to vector store...")
-    embed_and_add_nodes(nodes, embed_model, vector_store)
-
-    st.session_state.db_loaded = True
-    st.session_state.show_success = True  # Trigger success message
-
-
-def main(vector_store, embed_model, llm, retriever, language_detection_model):
-    st.title("RAG-based Research Assistant")
-
-    # Initialize session state variables
-    if "last_query" not in st.session_state:
-        st.session_state.last_query = ""
-    if "response" not in st.session_state:
-        st.session_state.response = ""
-    if "db_loaded" not in st.session_state:
-        st.session_state.db_loaded = False
-    if "show_success" not in st.session_state:
-        st.session_state.show_success = False
-
-    # Reset the success message state if not triggered by "Load Database"
-    if st.session_state.show_success and not st.session_state.db_loaded:
-        st.session_state.show_success = False
-
-    # -------------------- USER INPUT --------------------
-    user_query = st.text_area("Enter your line of investigation:")
-
-    # If the user typed a new query, clear any previous response
-    if user_query != st.session_state.last_query:
-        st.session_state.response = ""
-        st.session_state.last_query = user_query
-
-    # ------------------- SEARCH BUTTON ------------------
-    if st.button("Search"):
-        if user_query.strip():
-            # Call the RAG pipeline
-
-            # Detect the language of the query
-            detected_language = detect_language(user_query, language_detection_model)
-
-            # Transform the query
-            transformed_query = run_query_transformation_filter(user_query, llm)
-
-            # Clean the output if it contains "Output: "
-            if "Output: " in transformed_query.raw["choices"][0]["text"]:
-                # Find the last index of the string "Output: "
-                transformed_query = transformed_query.raw["choices"][0]["text"][transformed_query.raw["choices"][0]["text"].rfind('Output: "') + len('Output: "'): -1]
-            
-            # Get the query response
-            confidence_threshold = 0.8
-            response = query_with_confidence(transformed_query, retriever, confidence_threshold)
-            if len(response) == 0:
-                st.session_state.response = "I have not found relevant documents about the topic you are researching."
-            else:
-                # Call the correlation filter
-                result = run_correlation_filter(user_query, detected_language, response, llm)
-                st.session_state.response = result
-        else:
-            st.write("Please enter a query.")
-
-    # ------------------ DISPLAY RESPONSE ----------------
-    st.markdown("### RAG Answer")
-    st.write(st.session_state.response)
-
-    # ------------------- LOAD DATABASE BUTTON -------------------
-    # Use Streamlit's columns for alignment
-    _, col2 = st.columns([7, 2])  # Adjust column ratio for alignment
-
-    with col2:
-        if st.button(
-            "Load Database",
-            disabled=st.session_state.db_loaded,
-            key="load_db_button",
-        ):
-            load_database(embed_model, vector_store)  # Load the database when button is clicked
-
-    # ------------------ SUCCESS MESSAGE ------------------
-    success_placeholder = st.empty()  # Create a placeholder for the success message
-
-    if st.session_state.show_success:
-        success_placeholder.success("Database successfully loaded!")
-        time.sleep(3)  # Wait for 3 seconds
-        success_placeholder.empty()  # Clear the message
-        st.session_state.show_success = False
-
-
-if __name__ == "__main__":
+def setup():
+    # --------------- Setup ---------------
     print("Creating vector store...")
-    vector_store = create_vector_store()
+    collection, vector_store = create_vector_store()
 
     print("Setting up embedding model...")
     embed_model = get_embedding_model()
@@ -151,4 +54,119 @@ if __name__ == "__main__":
     print("Loading language detection model...")
     language_detection_model = load_language_detection_model(FASTTEXT_MODEL)
 
-    main(vector_store, embed_model, llm, retriever, language_detection_model)
+    return embed_model, llm, retriever, vector_store, collection, language_detection_model
+
+
+# --------------- Database Loading Logic ---------------
+def load_database(embed_model, vector_store):
+    print("Loading documents...")
+    documents = load_documents(max_docs=500)
+
+    print("Splitting documents into chunks...")
+    text_chunks, doc_idxs = chunk_documents(documents)
+
+    print("Creating nodes...")
+    nodes = create_nodes(documents, text_chunks, doc_idxs)
+
+    print("Embedding and adding nodes to vector store...")
+    embed_and_add_nodes(nodes, embed_model, vector_store)
+
+
+def main():
+
+    # Set the page title
+    st.title("RAG-based Research Assistant")
+
+    # Initialize session state variables
+    if "last_query" not in st.session_state:
+        st.session_state.last_query = ""
+    if "response" not in st.session_state:
+        st.session_state.response = ""
+    if "db_loaded" not in st.session_state:
+        st.session_state.db_loaded = False
+    if "show_success" not in st.session_state:
+        st.session_state.show_success = False
+    if "embed_model" not in st.session_state:
+        # Setup the application
+        embed_model, llm, retriever, vector_store, collection, language_detection_model = setup()
+
+        # Save the setup in session state
+        st.session_state.embed_model = embed_model
+        st.session_state.llm = llm
+        st.session_state.retriever = retriever
+        st.session_state.vector_store = vector_store
+        st.session_state.collection = collection
+        st.session_state.language_detection_model = language_detection_model
+    
+
+    # Reset the success message state if not triggered by "Load Database"
+    if st.session_state.show_success and not st.session_state.db_loaded:
+        st.session_state.show_success = False
+
+    # -------------------- USER INPUT --------------------
+    user_query = st.text_area("Enter your line of investigation:")
+
+    # If the user typed a new query, clear any previous response
+    if user_query != st.session_state.last_query:
+        st.session_state.response = ""
+        st.session_state.last_query = user_query
+
+    # ------------------- SEARCH BUTTON ------------------
+    if st.button("Search"):
+        if user_query.strip():
+            # Call the RAG pipeline
+
+            # Detect the language of the query
+            detected_language = detect_language(user_query, st.session_state.language_detection_model)
+            print(f"Detected language: {detected_language}")
+
+            # Transform the query
+            transformed_query = run_query_transformation_filter(user_query, st.session_state.llm)
+            if "Output: " in transformed_query:
+                transformed_query = transformed_query[transformed_query.rfind('Output: "') + len('Output: "'): -1]
+            print(f"Transformed query: {transformed_query}")
+
+            # Get the query response
+            confidence_threshold = 0.8
+            response = query_with_confidence(transformed_query, st.session_state.retriever, confidence_threshold)
+            if len(response) == 0:
+                st.session_state.response = "I have not found relevant documents about the topic you are researching."
+            else:
+                # Call the correlation filter
+                result = run_correlation_filter(user_query, detected_language, response, st.session_state.llm)
+                st.session_state.response = result
+        else:
+            st.write("Please enter a query.")
+
+    # ------------------ DISPLAY RESPONSE ----------------
+    st.markdown("### RAG Answer")
+    st.write(st.session_state.response)
+
+    # ------------------- LOAD DATABASE BUTTON -------------------
+    # Use Streamlit's columns for alignment
+    _, col2 = st.columns([7, 2])  # Adjust column ratio for alignment
+
+    with col2:
+        if st.button(
+            "Load Database",
+            disabled=st.session_state.db_loaded,
+            key="load_db_button",
+        ):
+            if st.session_state.collection.count() == 0:
+                load_database(st.session_state.embed_model, st.session_state.vector_store)  # Load the database when button is clicked
+
+            st.session_state.db_loaded = True
+            st.session_state.show_success = True  # Trigger success message
+
+    # ------------------ SUCCESS MESSAGE ------------------
+    success_placeholder = st.empty()  # Create a placeholder for the success message
+
+    if st.session_state.show_success:
+        success_placeholder.success("Database successfully loaded!")
+        time.sleep(3)  # Wait for 3 seconds
+        success_placeholder.empty()  # Clear the message
+        st.session_state.show_success = False
+
+
+if __name__ == "__main__":
+    main()
