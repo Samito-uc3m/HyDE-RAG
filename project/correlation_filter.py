@@ -39,30 +39,20 @@ def build_correlation_prompt(query_str: str, output_language: str, retrieved_doc
     str
         El texto del prompt estructurado para ser usado por un modelo de lenguaje.
     """
-    doc_summaries = ""
-    for i, doc in enumerate(retrieved_docs):
-        doc_summaries += (
-            f"\nDocument {i} (Title: '{doc.title}', Abstract: '{doc.abstract}', Score: {doc.similarity}):\n"
-        )
+    doc_descriptions = "\n".join(
+        f"Document {i+1}: Title: '{doc.title}' | Similarity Score: {doc.similarity}\nAbstract: {doc.abstract}"
+        for i, doc in enumerate(retrieved_docs)
+    )
 
-    prompt = f"""
-                System: You are an assistant that compares the user's research query to the provided documents.
-                Produce a compilation of key points from the documents and highlight any differences or gaps.
-                Please provide your response in a single paragraph. Please provide your answer in {output_language} language.
-                If the retrieved documents do not have relevant information about the query please only state
-                    'I have not found relevant documents about the topic you are researching.' and there is no need to follow the instructions bellow.
+    prompt = (
+        "User Query:\n"
+        f"\"{query_str}\"\n\n"
+        "Retrieved Documents for Comparison:\n"
+        f"{doc_descriptions}\n\n"
 
-                User Query:
-                {query_str}
+        "Your response should synthesize the comparison in a concise, professional summary."
+    )
 
-                Retrieved Documents:
-                {doc_summaries}
-
-                Instructions:
-                1. Summarize the relevant points from the documents that match the user's query (the 'compilation').
-                2. Identify any differences, missing details, or conflicts between the user's query and what the documents provide.
-                3. Output the answer in a single paragraph where you state only the document titles, similarities and the differences found.
-            """
     return prompt
 
 
@@ -93,16 +83,33 @@ def run_correlation_filter(query_str: str, output_language: str, retrieved_docs:
     # Build the prompt text
     prompt_text = build_correlation_prompt(query_str, output_language, retrieved_docs)
 
-    # Now wrap that prompt_text into a list of messages
+    # Define the message roles for better alignment with the LLM API
+    system_content = (
+        "You are a specialized AI assistant focused on research analysis and comparison. Your task is to compare a user's research query with relevant papers, "
+        "summarize key findings, highlight similarities, and note any gaps or differences. Respond clearly and concisely in {output_language}."
+    )
+
+    user_instructions = (
+        "Instructions:\n"
+        "1. Summarize important points from documents if they match or relate closely to the user's query.\n"
+        "2. Mention the titles of matching documents and their similarity scores.\n"
+        "3. Identify and explain any differences, gaps, or conflicts between the user's query and document content.\n"
+        "4. If no documents closely match the query topic, clearly state 'I have not found relevant documents about the topic you are researching.'"
+    )
+
     messages = [
         ChatMessage(
             role=MessageRole.SYSTEM,
-            content="You are an assistant that compares the user query to the provided documents."
+            content=system_content
         ),
         ChatMessage(
             role=MessageRole.USER,
             content=prompt_text
         ),
+        ChatMessage(
+            role=MessageRole.SYSTEM,
+            content=user_instructions
+        )
     ]
 
     # Pass messages=list_of_dicts instead of a single string
