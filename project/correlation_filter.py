@@ -50,7 +50,7 @@ def build_correlation_prompt(query_str: str, output_language: str, retrieved_doc
         "Retrieved Documents for Comparison:\n"
         f"{doc_descriptions}\n\n"
 
-        "Your response should synthesize the comparison in a concise, professional summary."
+        "Focus on clarity, conciseness, and accuracy."
     )
 
     return prompt
@@ -91,10 +91,25 @@ def run_correlation_filter(query_str: str, output_language: str, retrieved_docs:
 
     user_instructions = (
         "Instructions:\n"
-        "1. Summarize important points from documents if they match or relate closely to the user's query.\n"
+        "1. Provide the following format in your response:\n"
+        "   - Title: '<document_title>' (Score: <similarity_score>): <brief_summary>\n"
         "2. Mention the titles of matching documents and their similarity scores.\n"
         "3. Identify and explain any differences, gaps, or conflicts between the user's query and document content.\n"
         "4. If no documents closely match the query topic, clearly state 'I have not found relevant documents about the topic you are researching.'"
+    )
+
+    user_instructions = (
+        "Instructions:\n"
+        "1. Start with an introductory paragraph indicating whether relevant documents have been found. Use the following example as a reference:\n"
+        "   Query: I am researching implementations of federated neural topic models.\n"
+        "   Respuesta:\n"
+        "   I have found several relevant articles, including \"Federated topic modeling\" and \"Federated non-negative matrix factorization for short texts topic modeling with mutual information\".\n"
+        "   These works focus on implementing federated approaches for Bayesian topic models, such as LDA or NMF, but none provide an implementation based on neural topic models.\n\n"
+        "2. Follow the introductory paragraph with a structured list for the top documents:\n"
+        "   - Title: '<document_title>' (Score: <similarity_score>): <brief_summary>\n"
+        "3. Clearly indicate whether each document addresses the same topic, a related topic, or a different topic compared to the user's query.\n"
+        "4. If none of the documents are relevant to the query, state: 'I have not found relevant documents about the topic you are researching.'\n"
+        "5. Present the analysis in a professional and structured format."
     )
 
     messages = [
