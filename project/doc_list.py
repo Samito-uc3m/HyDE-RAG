@@ -4,7 +4,6 @@ Módulo: doc_list.py
 Módulo para construir una lista estructurada de documentos.
 """
 
-import json
 from pydantic import BaseModel
 
 

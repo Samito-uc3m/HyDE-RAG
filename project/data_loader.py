@@ -10,8 +10,6 @@ import json
 import os
 
 import kagglehub
-from config import PDF_FILE_PATH
-from llama_index.readers.file import PyMuPDFReader
 
 
 def load_documents(max_docs = None):

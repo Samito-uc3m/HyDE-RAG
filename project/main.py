@@ -6,7 +6,7 @@ os.environ["HF_TOKEN"] = "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"
 
 
 from confidence_filter import query_with_confidence
-from config import QUERY_MODE, NODE_TOP_K, DOCUMENT_TOP_K, FASTTEXT_MODEL
+from config import settings
 from correlation_filter import run_correlation_filter
 from query_transformer import run_query_transformation_filter
 from data_loader import load_documents
@@ -53,13 +53,13 @@ def main():
     retriever = VectorDBRetriever(
         vector_store=vector_store,
         embed_model=embed_model,
-        query_mode=QUERY_MODE,
-        node_top_k=NODE_TOP_K,
-        document_top_k=DOCUMENT_TOP_K
+        query_mode=settings.QUERY_MODE,
+        node_top_k=settings.NODE_TOP_K,
+        document_top_k=settings.DOCUMENT_TOP_K
     )
 
     print("Loading language detection model...")
-    language_detection_model = load_language_detection_model(FASTTEXT_MODEL)
+    language_detection_model = load_language_detection_model()
 
     # User query
     user_query = "I am researching about the renormalized quasiparticles in antiferromagnetic states of the Hubbard model, could you please check and find any relevant documents?"

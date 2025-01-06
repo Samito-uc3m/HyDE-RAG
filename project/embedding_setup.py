@@ -5,7 +5,7 @@ Módulo para configurar y devolver un modelo de embeddings basado en HuggingFace
 """
 
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
-from config import EMBED_MODEL_NAME
+from config import settings
 
 def get_embedding_model():
     """
@@ -17,4 +17,4 @@ def get_embedding_model():
     HuggingFaceEmbedding
         Una instancia del modelo de embeddings configurado.
     """
-    return HuggingFaceEmbedding(model_name=EMBED_MODEL_NAME)
+    return HuggingFaceEmbedding(model_name=settings.EMBED_MODEL_NAME)

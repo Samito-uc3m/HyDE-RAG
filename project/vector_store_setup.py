@@ -8,7 +8,7 @@ con metadatos, y generar incrustaciones para su almacenamiento.
 
 
 from typing import Tuple
-from config import CHUNK_SIZE, CHUNK_OVERLAP, DATABASE_PATH
+from config import settings
 from llama_index.core.node_parser import SentenceSplitter
 from llama_index.core.schema import TextNode
 from llama_index.vector_stores.chroma import ChromaVectorStore
@@ -31,7 +31,7 @@ def create_vector_store() -> Tuple[Collection, ChromaVectorStore]:
     ChromaVectorStore
         Una instancia del almacén vectorial de Chroma.
     """
-    chroma_client = chromadb.PersistentClient(path=str(DATABASE_PATH))
+    chroma_client = chromadb.PersistentClient(path=str(settings.DATABASE_PATH))
     chroma_collection = chroma_client.get_or_create_collection("quickstart")
     return chroma_collection, ChromaVectorStore(chroma_collection=chroma_collection)
 
@@ -56,8 +56,8 @@ def chunk_documents(documents):
         índices de documento asociados.
     """
     text_parser = SentenceSplitter(
-        chunk_size=CHUNK_SIZE,
-        chunk_overlap=CHUNK_OVERLAP,
+        chunk_size=settings.CHUNK_SIZE,
+        chunk_overlap=settings.CHUNK_OVERLAP,
     )
 
     text_chunks = []
