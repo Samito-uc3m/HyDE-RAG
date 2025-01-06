@@ -23,21 +23,28 @@ from vector_store_setup import (
 
 
 def main():
-    print("Loading documents...")
-    documents = load_documents(max_docs=500)
-
     print("Creating vector store...")
-    vector_store = create_vector_store()
+    collection, vector_store = create_vector_store()
 
-    print("Splitting documents into chunks...")
-    text_chunks, doc_idxs = chunk_documents(documents)
-
-    print("Creating nodes...")
-    nodes = create_nodes(documents, text_chunks, doc_idxs)
-
-    print("Embedding and adding nodes to vector store...")
+    print("Setting up embdding model...")
     embed_model = get_embedding_model()
-    embed_and_add_nodes(nodes, embed_model, vector_store)
+
+    # Check if the vector store is empty
+    if collection.count() == 0:
+        print("Loading documents...")
+        documents = load_documents(max_docs=5000)
+
+        print("Splitting documents into chunks...")
+        text_chunks, doc_idxs = chunk_documents(documents)
+
+        print("Creating nodes...")
+        nodes = create_nodes(documents, text_chunks, doc_idxs)
+
+        print("Adding nodes to vector store...")
+        embed_and_add_nodes(nodes, embed_model, vector_store)
+    
+    else:
+        print(f"Skipping collection loading because it already contains {collection.count()} nodes.")
 
     print("Setting up LLM...")
     llm = get_llm()
@@ -54,10 +61,6 @@ def main():
     print("Loading language detection model...")
     language_detection_model = load_language_detection_model(FASTTEXT_MODEL)
 
-
-    # print("Creating query engine...")
-    # query_engine = create_query_engine(retriever, llm)
-
     # User query
     user_query = "I am researching about the renormalized quasiparticles in antiferromagnetic states of the Hubbard model, could you please check and find any relevant documents?"
     user_query = "Estoy investigando sobre las quasi-partículas renormalizadas en estados antiferromagnéticos del modelo de Hubbard. ¿Podrías, por favor, buscar y encontrar documentos relevantes?"
@@ -68,9 +71,8 @@ def main():
     
     # Transform the user query
     transformed_query = run_query_transformation_filter(user_query, llm)
-    if "Output: " in transformed_query.raw["choices"][0]["text"]:
-        # Find the last index of the string "Output: "
-        transformed_query = transformed_query.raw["choices"][0]["text"][transformed_query.raw["choices"][0]["text"].rfind('Output: "') + len('Output: "'): -1]
+    if "Output: " in transformed_query:
+        transformed_query = transformed_query[transformed_query.rfind('Output: "') + len('Output: "'): -1]
         print("Trimmed Query", transformed_query)
     confidence_threshold = 0.8
 

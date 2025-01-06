@@ -85,5 +85,5 @@ def run_query_transformation_filter(query_str: str, llm) -> ChatResponse:
     ]
 
     # Pass messages=list_of_dicts instead of a single string
-    response = llm.chat(messages=messages)
+    response = llm.chat(messages=messages).raw['choices'][0]['text']
     return response

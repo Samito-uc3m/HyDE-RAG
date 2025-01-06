@@ -7,15 +7,18 @@ con metadatos, y generar incrustaciones para su almacenamiento.
 """
 
 
-from config import CHUNK_SIZE, CHUNK_OVERLAP
+from typing import Tuple
+from config import CHUNK_SIZE, CHUNK_OVERLAP, DATABASE_PATH
 from llama_index.core.node_parser import SentenceSplitter
 from llama_index.core.schema import TextNode
 from llama_index.vector_stores.chroma import ChromaVectorStore
 
 import chromadb
+from chromadb.api.models.Collection import Collection
 
 
-def create_vector_store():
+
+def create_vector_store() -> Tuple[Collection, ChromaVectorStore]:
     """
     Crea e inicializa un almacén vectorial con Chroma.
 
@@ -28,9 +31,9 @@ def create_vector_store():
     ChromaVectorStore
         Una instancia del almacén vectorial de Chroma.
     """
-    chroma_client = chromadb.EphemeralClient()
+    chroma_client = chromadb.PersistentClient(path=str(DATABASE_PATH))
     chroma_collection = chroma_client.get_or_create_collection("quickstart")
-    return ChromaVectorStore(chroma_collection=chroma_collection)
+    return chroma_collection, ChromaVectorStore(chroma_collection=chroma_collection)
 
 
 def chunk_documents(documents):
@@ -94,20 +97,31 @@ def create_nodes(documents, text_chunks, doc_idxs):
     return nodes
 
 
-def embed_and_add_nodes(nodes, embed_model, vector_store):
+def embed_and_add_nodes(nodes, embed_model, vector_store, batch_size=100):
     """
-    Genera embeddings para los nodos de texto y los agrega al almacén vectorial.
+    Genera embeddings para los nodos de texto y los agrega al almacén vectorial en lotes.
 
     Parámetros:
     -----------
     nodes : list
         Lista de nodos de texto para incrustar.
     embed_model : object
-        Modelo utilizado para generar incrustaciones de texto.
+        Modelo utilizado para generar incrustaciones de texto. Debe poder
+        manejar listas de textos en una sola llamada para usar el modo batch.
     vector_store : ChromaVectorStore
         Instancia del almacén vectorial donde se almacenarán los nodos incrustados.
+    batch_size : int
+        Tamaño del lote (batch) para procesar las incrustaciones. Por defecto, 1000.
     """
+
+    nodes_to_save = []
     for node in nodes:
         node_embedding = embed_model.get_text_embedding(node.get_content(metadata_mode="all"))
         node.embedding = node_embedding
-    vector_store.add(nodes)
+        nodes_to_save.append(node)
+
+        if len(nodes_to_save) >= batch_size:
+            vector_store.add(nodes_to_save)
+            nodes_to_save = []
+        
+    vector_store.add(nodes_to_save)
