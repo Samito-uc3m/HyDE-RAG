@@ -2,7 +2,7 @@ from pathlib import Path
 
 DATABASE_PATH = Path('./data/llama.db')
 
-# MODEL_URL = "https://huggingface.co/TheBloke/Llama-2-13B-chat-GGUF/resolve/main/llama-2-13b-chat.Q4_0.gguf"
+MODEL_URL = "https://huggingface.co/TheBloke/Llama-2-13B-chat-GGUF/resolve/main/llama-2-13b-chat.Q4_0.gguf"
 # MODEL_URL = "https://huggingface.co/TheBloke/Llama-2-13B-chat-GGUF/"
 # MODEL_URL = "https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct"
 PDF_FILE_PATH = "./data/llama2.pdf"

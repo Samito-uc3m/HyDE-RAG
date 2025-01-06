@@ -129,12 +129,10 @@ def main():
             # Get the query response
             confidence_threshold = 0.8
             response = query_with_confidence(transformed_query, st.session_state.retriever, confidence_threshold)
-            if len(response) == 0:
-                st.session_state.response = "I have not found relevant documents about the topic you are researching."
-            else:
-                # Call the correlation filter
-                result = run_correlation_filter(user_query, detected_language, response, st.session_state.llm)
-                st.session_state.response = result
+            
+            # Call the correlation filter
+            result = run_correlation_filter(user_query, detected_language, response, st.session_state.llm)
+            st.session_state.response = result
         else:
             st.write("Please enter a query.")
 

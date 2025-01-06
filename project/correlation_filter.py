@@ -1,132 +1,135 @@
-"""
-Módulo: correlation_filter.py
-
-Módulo para construir prompts y ejecutar un filtro de correlación entre una consulta
-del usuario y documentos recuperados. Permite identificar diferencias, brechas y similitudes 
-entre la consulta y el contenido de los documentos mediante un modelo de lenguaje.
-"""
-
 from typing import List
-
-from llama_index.core import QueryBundle
-from llama_index.core.schema import NodeWithScore
 from llama_index.core.base.llms.types import (
     ChatMessage,
-    ChatResponse,
     MessageRole,
 )
 from doc_list import DocListResponse
 
-
-
-def build_correlation_prompt(query_str: str, output_language: str, retrieved_docs: List[DocListResponse]) -> str:
+def summarize_document(doc: DocListResponse, output_language: str, llm) -> str:
     """
-    Construye un prompt que:
-    1. Resume el contenido relevante de cada documento (la compilación).
-    2. Destaca diferencias o brechas entre la consulta del usuario y los documentos.
-
-    Parámetros:
+    Summarizes a single document using a language model, ensuring the summary is brief (1-2 sentences).
+    
+    Parameters:
     -----------
-    query_str : str
-        El texto de la consulta del usuario.
+    doc : DocListResponse
+        A single document retrieved for the query.
     output_language : str
-        El idioma en el que se debe generar la respuesta.
-    retrieved_docs : List[DocListResponse]
-        Una lista de documentos relevantes recuperados para la consulta.
-
-    Devuelve:
+        The language in which the summary should be generated.
+    llm : object
+        The language model for processing the prompt.
+    
+    Returns:
     --------
     str
-        El texto del prompt estructurado para ser usado por un modelo de lenguaje.
+        A brief 1-2 sentence summary of the document.
     """
-    doc_descriptions = "\n".join(
-        f"Document {i+1}: Title: '{doc.title}' | Similarity Score: {doc.similarity}\nAbstract: {doc.abstract}"
-        for i, doc in enumerate(retrieved_docs)
+    prompt_text = (
+        f"Respond clearly and concisely in {output_language} to summarize the following document in 1-2 sentences:\n"
+        f"Title: {doc.title}\n"
+        f"Abstract: {doc.abstract}\n\n"
+        "Provide only a brief 1-2 sentence summary."
     )
 
-    prompt = (
-        "User Query:\n"
-        f"\"{query_str}\"\n\n"
-        "Retrieved Documents for Comparison:\n"
-        f"{doc_descriptions}\n\n"
+    system_content = (
+        "You are a specialized AI assistant focused on summarizing academic documents. "
+        "Your task is to provide a concise, accurate 1-2 sentence summary of the provided document."
+    )
 
+    # Construct the message structure for the LLM
+    messages = [
+        ChatMessage(role=MessageRole.SYSTEM, content=system_content),
+        ChatMessage(role=MessageRole.USER, content=prompt_text),
+    ]
+
+    # Call the LLM to generate the summary
+    response = llm.chat(messages=messages)
+    summary = response.raw['choices'][0]['text'].strip()
+    
+    return summary
+
+
+def compare_summaries_with_query(query_str: str, summaries: List[str], output_language: str, llm) -> str:
+    """
+    Asynchronously compares the document summaries with the user query.
+    
+    Parameters:
+    -----------
+    query_str : str
+        The user's query.
+    summaries : List[str]
+        Summaries of the retrieved documents.
+    output_language : str
+        The output language for the response.
+    llm : object
+        The language model for processing the prompt.
+    
+    Returns:
+    --------
+    str
+        The language model's response comparing the summaries with the query.
+    """
+    doc_descriptions = "\n".join(summaries)
+    
+    prompt_text = (
+        f"User Query:\n"
+        f"\"{query_str}\"\n\n"
+        f"Retrieved Documents for Comparison:\n"
+        f"{doc_descriptions}\n\n"
         "Focus on clarity, conciseness, and accuracy."
     )
 
-    return prompt
-
-
-def run_correlation_filter(query_str: str, output_language: str, retrieved_docs: List[DocListResponse], llm) -> ChatResponse:
-    """
-    Ejecuta un filtro de correlación entre la consulta del usuario y los documentos recuperados.
-    
-    Este método construye un prompt basado en la consulta del usuario y los documentos relevantes,
-    llama a un modelo de lenguaje (LLM) para analizar la correlación y devuelve un resultado estructurado.
-
-    Parámetros:
-    -----------
-    query_str : str
-        El texto de la consulta del usuario.
-    output_language : str
-        El idioma en el que se debe generar la respuesta.
-    retrieved_docs : List[DocListResponse]
-        Una lista de documentos relevantes recuperados para la consulta.
-    llm : object
-        El modelo de lenguaje encargado de procesar el prompt y devolver el resultado.
-
-    Devuelve:
-    --------
-    ChatResponse
-        La respuesta estructurada generada por el modelo de lenguaje.
-    """
-
-    # Build the prompt text
-    prompt_text = build_correlation_prompt(query_str, output_language, retrieved_docs)
-
-    # Define the message roles for better alignment with the LLM API
     system_content = (
-        "You are a specialized AI assistant focused on research analysis and comparison. Your task is to compare a user's research query with relevant papers, "
-        "summarize key findings, highlight similarities, and note any gaps or differences. Respond clearly and concisely in {output_language}."
+        "You are a specialized AI assistant focused on research analysis and comparison. Your task is to compare a user's research "
+        "query with relevant papers, highlight similarities and note any gaps or differences."
     )
 
     user_instructions = (
         "Instructions:\n"
-        "1. Provide the following format in your response:\n"
-        "   - Title: '<document_title>' (Score: <similarity_score>): <brief_summary>\n"
-        "2. Mention the titles of matching documents and their similarity scores.\n"
-        "3. Identify and explain any differences, gaps, or conflicts between the user's query and document content.\n"
-        "4. If no documents closely match the query topic, clearly state 'I have not found relevant documents about the topic you are researching.'"
-    )
-
-    user_instructions = (
-        "Instructions:\n"
-        "1. Start with an introductory paragraph indicating whether relevant documents have been found. Use the following example as a reference:\n"
-        "   Query: I am researching implementations of federated neural topic models.\n"
-        "   Respuesta:\n"
-        "   I have found several relevant articles, including \"Federated topic modeling\" and \"Federated non-negative matrix factorization for short texts topic modeling with mutual information\".\n"
-        "   These works focus on implementing federated approaches for Bayesian topic models, such as LDA or NMF, but none provide an implementation based on neural topic models.\n\n"
-        "2. Follow the introductory paragraph with a structured list for the top documents:\n"
-        "   - Title: '<document_title>' (Score: <similarity_score>): <brief_summary>\n"
-        "3. Clearly indicate whether each document addresses the same topic, a related topic, or a different topic compared to the user's query.\n"
-        "4. If none of the documents are relevant to the query, state: 'I have not found relevant documents about the topic you are researching.'\n"
-        "5. Present the analysis in a professional and structured format."
+        f"1. Respond clearly and concisely in {output_language} to all the following points.\n"
+        "2. If none of the documents are relevant to the query, only state in the corresponding language: 'I have not found relevant documents about the topic you are researching.'\n"
+        "3. Present the analysis in a professional and structured format."
     )
 
     messages = [
-        ChatMessage(
-            role=MessageRole.SYSTEM,
-            content=system_content
-        ),
-        ChatMessage(
-            role=MessageRole.USER,
-            content=prompt_text
-        ),
-        ChatMessage(
-            role=MessageRole.SYSTEM,
-            content=user_instructions
-        )
+        ChatMessage(role=MessageRole.SYSTEM, content=system_content),
+        ChatMessage(role=MessageRole.USER, content=prompt_text),
+        ChatMessage(role=MessageRole.SYSTEM, content=user_instructions)
     ]
 
-    # Pass messages=list_of_dicts instead of a single string
     response = llm.chat(messages=messages).raw['choices'][0]['text']
     return response
+
+def run_correlation_filter(query_str: str, output_language: str, retrieved_docs: List[DocListResponse], llm) -> str:
+    """
+    Workflow of summarizing documents and comparing with the query.
+    
+    Parameters:
+    -----------
+    query_str : str
+        The user's query.
+    output_language : str
+        The output language for the response.
+    retrieved_docs : List[DocListResponse]
+        A list of documents retrieved for the query.
+    llm : object
+        The language model for processing the prompt.
+    
+    Returns:
+    --------
+    str
+        The final response comparing the query with document summaries.
+    """
+
+    # Step 1: Summarize documents asynchronously
+    summaries = [summarize_document(doc, output_language, llm) for doc in retrieved_docs]
+    
+    # Step 2: Compare summaries with the query asynchronously
+    # response = compare_summaries_with_query(query_str, summaries, output_language, llm)
+
+    # Create final response
+    output_string = ""
+    for i, (doc, summary) in enumerate(zip(retrieved_docs, summaries)):
+        output_string += f"{i+1}: {doc.title} | {int(doc.similarity*100)}%: {summary}\n"
+    # output_string += f"{response}"
+    
+    return output_string

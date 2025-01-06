@@ -80,11 +80,7 @@ def main():
     response = query_with_confidence(transformed_query, retriever, confidence_threshold)
     # print(response)
 
-    if len(response) == 0:
-        print('I have not found relevant documents about the topic you are researching.')
-        return
-
-    correlation_response = run_correlation_filter(user_query, detected_language, response, llm)
+    correlation_response = run_correlation_filter(transformed_query, detected_language, response, llm)
     print("\n===== COMPILATION & DIFFERENCES =====\n")
     print(correlation_response)
 
