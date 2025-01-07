@@ -6,6 +6,7 @@ Este módulo permite a los usuarios ingresar consultas de investigación, buscar
 utilizando modelos de lenguaje y bases de datos vectoriales, desde la interfaz.
 """
 import time
+import sys
 
 import streamlit as st
 from confidence_filter import query_with_confidence
@@ -61,7 +62,8 @@ def setup():
 # --------------- Database Loading Logic ---------------
 def load_database(embed_model, vector_store):
     print("Loading documents...")
-    documents = load_documents(max_docs=500)
+    print(f"Max docs: {st.session_state.max_docs}")
+    documents = load_documents(max_docs=st.session_state.max_docs)
 
     print("Splitting documents into chunks...")
     text_chunks, doc_idxs = chunk_documents(documents)
@@ -72,12 +74,21 @@ def load_database(embed_model, vector_store):
     print("Embedding and adding nodes to vector store...")
     embed_and_add_nodes(nodes, embed_model, vector_store)
 
+    print("Database loaded!")
 
 def main():
     # Set the page title
     st.title("RAG-based Research Assistant")
 
     # Initialize session state variables
+    if "max_docs" not in st.session_state:
+        #Guardar el valor de max_docs en session state
+        if len(sys.argv) > 1:
+            st.session_state.max_docs = int(sys.argv[1])
+        else:
+            st.session_state.max_docs = None
+        
+        
     if "last_query" not in st.session_state:
         st.session_state.last_query = ""
     if "response" not in st.session_state:
@@ -186,3 +197,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
