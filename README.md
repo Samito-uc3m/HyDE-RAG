@@ -119,20 +119,20 @@ If the module is successfully imported and the version is displayed, the install
 Once the dependencies are installed in the Poetry environment, run the application using the following command from the project's root directory:
 
 ```bash
-poetry run streamlit run rag/streamlit_app.py [max_docs]
+poetry run streamlit run project/streamlit_app.py [max_docs]
 ```
 
 - `max_docs` is an optional argument to limit the number of documents stored in the database. This can improve performance during testing, especially since the ArXiv database contains over 30,000 documents.
 
 ### Example with Document Limit
 ```bash
-poetry run streamlit run rag/streamlit_app.py 500
+poetry run streamlit run project/streamlit_app.py 500
 ```
 
 ### Without Document Limit
 If you prefer not to limit the number of documents:
 ```bash
-poetry run streamlit run rag/streamlit_app.py
+poetry run streamlit run project/streamlit_app.py
 ```
 
 ---
@@ -154,7 +154,25 @@ Once the database is loaded:
 - Queries can be performed in **any language supported by GPT-4o Mini**.
 
 ### Demo Video
-A demonstration video showcasing the application's workflow will be included here.
+A demonstration video showcasing the full capabilities of the system.
+
+https://github.com/user-attachments/assets/f1eaeafc-23d9-4ffb-9202-c44a586ac501
+
+### Test Screenshots
+
+We have verified that the system is capable of identifying similarities between the user's query and the documents found in the database.
+
+![imagen](https://github.com/user-attachments/assets/3d44513c-61d9-4cfa-b6d0-271192a9c5ee)
+
+If no relevant documents are found, this is clearly indicated by the system.
+
+![imagen](https://github.com/user-attachments/assets/b7e4f722-6c70-4491-9d14-22948d740528)
+
+In addition to English and Spanish, we have confirmed that the system works with other languages, such as French.
+
+![imagen](https://github.com/user-attachments/assets/6fbebaf8-4b8a-4162-af3b-2cbfe0a005a1)
+
+
 
 ---
 
