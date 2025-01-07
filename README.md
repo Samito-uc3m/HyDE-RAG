@@ -204,6 +204,8 @@ For each retrieved article, the **LLM** generates summaries highlighting the key
 
 ### Summary of the Workflow
 
+![imagen](https://github.com/user-attachments/assets/672cfdde-8b12-44a0-92c9-ad2feec1a768)
+
 1. **Query Submission:** The user sends a query to the system.
 2. **Language Detection:** The system detects the query language using the **FASTTEXT model**.
 3. **Query Transformation:** The query is refined by **GPT-4o Mini**, removing unnecessary words and translating it into English if necessary.
