@@ -24,9 +24,9 @@ The system leverages **Retrieval-Augmented Generation (RAG)** and **Large Langua
       - [Similarity Metrics](#similarity-metrics)
       - [Translation and Multilingual Support](#translation-and-multilingual-support)
       - [Summaries for Retrieved Articles](#summaries-for-retrieved-articles)
-9. [System Workflow](#system-workflow)
+   5. [Summary of the Workflow](#summary_of_the_workflow)
+9. [Authors](#authors)
 10. [License](#license)
-11. [Contact](#contact)
 
 ---
 
@@ -235,16 +235,15 @@ This workflow ensures precise results and seamless multilingual support.
 
 ---
 
-## License
-MIT License
+## Authors
 
----
+[@Samito-uc3m](https://github.com/Samito-uc3m)
 
-## Contributors
-- [**Samito-uc3m**](https://github.com/Samito-uc3m)
-- [**JavGGon** - correo?](https://github.com/JavGGon)
-- [Rafa](https://github.com/rafael-torre)
-- Rodri
+[@JavGGon](https://github.com/JavGGon)
+
+[@rafael-torre](https://github.com/rafael-torre)
+
+Rodri
 
 Problema SQLLite3
 Hemos encontrado un problema al ejecutar el programa indicando que AppSession 
