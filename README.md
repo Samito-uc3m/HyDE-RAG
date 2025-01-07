@@ -241,9 +241,9 @@ MIT License
 ---
 
 ## Contributors
-- **Samito-uc3m** - correo?
-- **JavGGon** - correo?
-- Rafa
+- [**Samito-uc3m**](https://github.com/Samito-uc3m)
+- [**JavGGon** - correo?](https://github.com/JavGGon)
+- [Rafa](https://github.com/rafael-torre)
 - Rodri
 
 Problema SQLLite3
