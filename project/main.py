@@ -62,21 +62,18 @@ def main():
 
     # Transform the user query
     transformed_query = run_query_transformation_filter(settings.USER_QUERY, llm)
-    if "Output: " in transformed_query:
-        transformed_query = transformed_query[
-            transformed_query.rfind('Output: "') + len('Output: "') : -1
-        ]
-        print("Trimmed Query", transformed_query)
+    print("Transformed Query", transformed_query)
 
-    print("\n===== TRIMMED DOCUMENT LIST =====\n")
-    response = query_with_confidence(transformed_query, retriever)
-    # print(response)
+    # Query the retriever with confidence
+    query_documents = query_with_confidence(transformed_query, retriever)
+    print("\n===== QUERY DOCUMENTS =====\n")
+    print(query_documents)
 
-    correlation_response = run_response_maker(
-        transformed_query, detected_language, response, llm
+    llm_response = run_response_maker(
+        transformed_query, detected_language, query_documents, llm
     )
     print("\n===== COMPILATION & DIFFERENCES =====\n")
-    print(correlation_response)
+    print(llm_response)
 
 
 if __name__ == "__main__":

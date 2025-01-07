@@ -1,5 +1,5 @@
 """
-Módulo: confidence_filter.py
+Módulo: get_docs_from_query.py
 
 Módulo para realizar querys con un umbral de confianza mínimo.
 """
@@ -44,7 +44,7 @@ def query_with_confidence(query_str: str, retriever) -> str:
         # No documents retrieved => zero confidence
         return []
 
-    # Only return documents with confidence >= threshold
+    # Filter documents based on confidence threshold
     retrieved_docs = [
         doc
         for doc in retrieved_docs

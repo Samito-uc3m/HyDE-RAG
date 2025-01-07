@@ -10,7 +10,6 @@ class Settings(BaseSettings):
 
     # User query
     USER_QUERY: str = "Estoy investigando sobre las quasi-partículas renormalizadas en estados antiferromagnéticos del modelo de Hubbard. ¿Podrías, por favor, buscar y encontrar documentos relevantes?"
-    # USER_QUERY: str = "Estoy investigando sobre el FC Barcelona. ¿Podrías, por favor, buscar y encontrar documentos relevantes?"
 
     # General
     DATABASE_PATH: Path = Field(
@@ -26,8 +25,13 @@ class Settings(BaseSettings):
     )
 
     # OpenAI model
-    OPENAI_MODEL: str = Field(
-        default="gpt-4o-mini", description="Name of the OpenAI model."
+    OPENAI_GENERATOR_MODEL: str = Field(
+        default="gpt-4o-mini",
+        description="Name of the OpenAI model for text generation.",
+    )
+    OPENAI_CORRELATION_MODEL: str = Field(
+        default="gpt-4o-mini",
+        description="Name of the OpenAI model for documenta correlation.",
     )
     OPENAI_API_KEY: str = Field(default="", description="API key for OpenAI access.")
 
@@ -44,7 +48,7 @@ class Settings(BaseSettings):
     )
     QUERY_MODE: str = Field(default="default", description="Mode for querying.")
     RETRIEVER_CONFIDENCE_THRESHOLD: float = Field(
-        default=0.8, description="Confidence threshold for retriever."
+        default=0.7, description="Confidence threshold for retriever."
     )
 
     # Language model configuration

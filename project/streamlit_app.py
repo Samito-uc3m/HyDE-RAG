@@ -136,18 +136,19 @@ def main():
                 transformed_query = transformed_query[
                     transformed_query.rfind('Output: "') + len('Output: "') : -1
                 ]
-            print(f"Transformed query: {transformed_query}")
 
-            # Get the query response
-            response = query_with_confidence(
+            ## Query the retriever with confidence
+            query_documents = query_with_confidence(
                 transformed_query, st.session_state.retriever
             )
 
-            # Call the correlation filter
-            result = run_response_maker(
-                user_query, detected_language, response, st.session_state.llm
+            llm_response = run_response_maker(
+                transformed_query,
+                detected_language,
+                query_documents,
+                st.session_state.llm,
             )
-            st.session_state.response = result
+            st.session_state.response = llm_response
         else:
             st.write("Please enter a query.")
 

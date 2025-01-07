@@ -5,17 +5,13 @@ Módulo para la transformación de querys del usuario en frases más concisas y 
 búsquedas en una base de datos.
 """
 
-from llama_index.core.base.llms.types import (
-    ChatMessage,
-    ChatResponse,
-    MessageRole,
-)
+from llama_index.core.base.llms.types import ChatMessage, ChatResponse, MessageRole
 
 
 def build_entry_transformation_prompt(query_str: str) -> str:
     """
     Transforma la query original en una mejor para la búsqueda en la base de datos.
-    Construye una plantilla de prompt que orienta al modelo a generar una versión 
+    Construye una plantilla de prompt que orienta al modelo a generar una versión
     más breve y enfocada.
 
     Parámetros:
@@ -54,12 +50,13 @@ def run_query_transformation_filter(query_str: str, llm) -> ChatResponse:
     --------
     ChatResponse
         La respuesta generada por el modelo en forma de un objeto estructurado.
-    """    
+    """
 
     # Prompt with instructions
     system_content = (
         "You are a query simplification assistant for improving search efficiency. Your task is to transform user queries "
         "into concise phrases that capture the essential meaning. Exclude unnecessary words or details."
+        "You are not add any aditional information to the query, just the meaning of the original query."
     )
 
     user_task = (
@@ -70,18 +67,9 @@ def run_query_transformation_filter(query_str: str, llm) -> ChatResponse:
     prompt_text = build_entry_transformation_prompt(query_str)
 
     messages = [
-        ChatMessage(
-            role=MessageRole.SYSTEM,
-            content=system_content
-        ),
-        ChatMessage(
-            role=MessageRole.USER,
-            content=prompt_text
-        ),
-        ChatMessage(
-            role=MessageRole.SYSTEM,
-            content=user_task
-        )
+        ChatMessage(role=MessageRole.SYSTEM, content=system_content),
+        ChatMessage(role=MessageRole.USER, content=prompt_text),
+        ChatMessage(role=MessageRole.SYSTEM, content=user_task),
     ]
 
     # Pass messages=list_of_dicts instead of a single string
