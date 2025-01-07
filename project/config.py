@@ -10,6 +10,7 @@ class Settings(BaseSettings):
 
     # User query
     USER_QUERY: str = "Estoy investigando sobre las quasi-partículas renormalizadas en estados antiferromagnéticos del modelo de Hubbard. ¿Podrías, por favor, buscar y encontrar documentos relevantes?"
+    # USER_QUERY: str = "Estoy investigando sobre el FC Barcelona. ¿Podrías, por favor, buscar y encontrar documentos relevantes?"
 
     # General
     DATABASE_PATH: Path = Field(

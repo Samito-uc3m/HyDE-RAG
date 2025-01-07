@@ -1,11 +1,11 @@
 from confidence_filter import query_with_confidence
 from config import settings
-from correlation_filter import run_correlation_filter
 from data_loader import load_documents
 from embedding_setup import get_embedding_model
 from language_engine import detect_language, load_language_detection_model
 from llm_setup import get_llm
 from query_transformer import run_query_transformation_filter
+from response_maker import run_response_maker
 from retriever import VectorDBRetriever
 from vector_store_setup import (
     chunk_documents,
@@ -72,7 +72,7 @@ def main():
     response = query_with_confidence(transformed_query, retriever)
     # print(response)
 
-    correlation_response = run_correlation_filter(
+    correlation_response = run_response_maker(
         transformed_query, detected_language, response, llm
     )
     print("\n===== COMPILATION & DIFFERENCES =====\n")

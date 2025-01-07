@@ -4,13 +4,9 @@ from doc_list import DocListResponse
 from llama_index.core.base.llms.types import ChatMessage, ChatResponse, MessageRole
 
 
-def build_correlation_prompt(
-    query_str: str, retrieved_docs: List[DocListResponse]
-) -> str:
+def build_response_prompt(query_str: str, retrieved_docs: List[DocListResponse]) -> str:
     """
-    Construye un prompt que:
-    1. Resume el contenido relevante de cada documento (la compilación).
-    2. Destaca diferencias o brechas entre la consulta del usuario y los documentos.
+    Construye un prompt:
 
     Parámetros:
     -----------
@@ -41,11 +37,11 @@ def build_correlation_prompt(
     return prompt
 
 
-def run_correlation_filter(
+def run_response_maker(
     query_str: str, output_language: str, retrieved_docs: List[DocListResponse], llm
 ) -> ChatResponse:
     """
-    Ejecuta un filtro de correlación entre la consulta del usuario y los documentos recuperados.
+    Crea la respuesta entre la consulta del usuario y los documentos recuperados.
 
     Este método construye un prompt basado en la consulta del usuario y los documentos relevantes,
     llama a un modelo de lenguaje (LLM) para analizar la correlación y devuelve un resultado estructurado.
@@ -67,31 +63,32 @@ def run_correlation_filter(
         La respuesta estructurada generada por el modelo de lenguaje.
     """
 
-    # Build the prompt text
-    prompt_text = build_correlation_prompt(query_str, retrieved_docs)
+    # 1. Build the prompt text, which includes indexes for each document
+    prompt_text = build_response_prompt(query_str, retrieved_docs)
 
-    # Define the message roles for better alignment with the LLM API
-    # We instruct the model to:
-    # 1. Provide a single-paragraph summary (similarities/comparisons).
-    # 2. If the documents do not address the query topic, say "no matching documents"
-    #    and do NOT look anywhere else.
+    # 2. System instructions describing the overall role and format
     system_content = (
         "You are a specialized AI assistant focused on research analysis and comparison. "
-        "Your task is to compare the user query with the retrieved papers. In no more than one paragraph, "
-        "you must briefly describe any similarities or differences between the user's query and the retrieved documents. "
+        "Your task is to compare the user query with the retrieved papers. "
+        "If at least one document addresses the query, you must:\n"
+        " - Provide a single concise paragraph summarizing similarities or differences.\n"
+        " - Then list each relevant document in the following format:\n"
+        "    Index. Title (Similarity): Brief summary\n\n"
         "If none of the documents address the user's query, you must respond with a short message stating that "
-        "you have not found relevant documents about the topic without searching any other source. "
-        f"Respond in {output_language}."
+        "you have not found relevant documents about the topic, without searching any other source. "
+        f"Please respond in {output_language}, and do not exceed one paragraph for the summary."
     )
 
-    # We keep a minimal user_instructions message just to provide structure,
-    # but the main new constraints are already in the system_content above.
+    # 3. Additional user-facing instructions to reinforce the exact format
     user_instructions = (
         "Instructions:\n"
-        "1. If there are relevant documents, respond with a single concise paragraph summarizing how they match or differ from the query.\n"
-        "2. If no document match the user's query (do not refer to any other source)., respond with:\n"
-        "   'I have not found relevant documents about the topic you are researching.' in the corresponding language\n"
-        "3. Do not exceed one paragraph if documents are found.\n"
+        "1. If there are relevant documents, write a short paragraph (max one paragraph) comparing the query and the docs.\n"
+        "2. After that paragraph, list each relevant document in this structure:\n"
+        "   <document_index>. <document_title> (<document_similarity>): <short_summary_from_abstract_or_document>\n\n"
+        "3. If no document is relevant, respond with:\n"
+        "   'I have not found relevant documents about the topic you are researching.'\n"
+        "   (in the corresponding language, with no mention of other sources).\n"
+        "4. No extra paragraphs beyond the single summary paragraph. Then the list or message if no docs are relevant."
     )
 
     messages = [
@@ -100,6 +97,6 @@ def run_correlation_filter(
         ChatMessage(role=MessageRole.SYSTEM, content=user_instructions),
     ]
 
-    # Call the LLM with the structured messages
-    response = llm.chat(messages=messages).raw.choices[0].message.content.strip()
-    return response
+    # 4. Call the LLM with the structured messages
+    response_text = llm.chat(messages=messages).raw.choices[0].message.content.strip()
+    return response_text
