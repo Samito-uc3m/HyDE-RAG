@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  chromadb:
+    build: ./chromadb
+    container_name: chromadb_service
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma_data:/app/db
+    environment:
+      - CHROMADB_PORT=8000
+
+  hyde:
+    build: ./hyde
+    container_name: hyde_service
+    environment:
+      - CHROMADB_HOST=chromadb_service
+      - CHROMADB_PORT=8000
+    volumes:
+      - chroma_data:/app/db
+    
+
+volumes:
+  chroma_data:
+
