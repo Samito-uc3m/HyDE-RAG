@@ -5,6 +5,7 @@ Aplicación principal de Streamlit para un asistente de investigación basado en
 Este módulo permite a los usuarios ingresar consultas de investigación, buscar respuestas
 utilizando modelos de lenguaje y bases de datos vectoriales, desde la interfaz.
 """
+
 import time
 import sys
 
@@ -132,6 +133,7 @@ def main():
     if st.button("Search"):
         if user_query.strip():
             # Call the RAG pipeline
+            user_query = user_query.replace("\n", " ")
 
             # Detect the language of the query
             detected_language = detect_language(

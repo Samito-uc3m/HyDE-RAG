@@ -56,7 +56,7 @@ def run_query_transformation_filter(query_str: str, llm) -> ChatResponse:
     system_content = (
         "You are a query simplification assistant for improving search efficiency. Your task is to transform user queries "
         "into concise phrases that capture the essential meaning. Exclude unnecessary words or details."
-        "You are not add any aditional information to the query, just the meaning of the original query."
+        "You are not add any additional information to the query, just the meaning of the original query."
     )
 
     user_task = (

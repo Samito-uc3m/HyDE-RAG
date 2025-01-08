@@ -179,7 +179,7 @@ In addition to English and Spanish, we have confirmed that the system works with
 ## Project Structure
 The project follows a modular structure to separate the main application logic from the data and models. The main components are organized as follows:
 ```
-HYDE-RAG/
+Research-RAG/
 ├── data/       # Loaded databases
 ├── models/     # Language detection models (e.g., FASTTEXT)
 └── project/    # Main application modules
@@ -212,7 +212,7 @@ The system introduces similarity metrics between the user's query and the retrie
 #### Translation and Multilingual Support
 The system supports multilingual input and output. Queries are translated into the database's language (English) for processing, and the final responses are returned in the user's original language. The process includes:
 1. **Language Detection:** A **FASTTEXT** model is used for quick and accurate detection of the input language.
-2. **Translation:** Input queries are translated into English, and the output is configured to match the detected language. 
+2. **Translation:** Input queries are translated into English, and the output is configured to match the detected language.
    - This enables the system to support all languages compatible with **GPT-4o Mini**, with particular emphasis on Spanish and English.
 
 #### Summaries for Retrieved Articles
@@ -243,10 +243,10 @@ This workflow ensures precise results and seamless multilingual support.
 
 [@rafael-torre](https://github.com/rafael-torre)
 
-Rodri
+[@rodrigoPisani1](https://github.com/rodrigoPisani1)
 
 Problema SQLLite3
-Hemos encontrado un problema al ejecutar el programa indicando que AppSession 
+Hemos encontrado un problema al ejecutar el programa indicando que AppSession
 
 ## License
 This project is licensed under the [MIT License](LICENSE).
